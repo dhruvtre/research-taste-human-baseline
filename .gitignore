@@ -1,0 +1,8 @@
+.DS_Store
+*.swp
+.vscode/
+.idea/
+node_modules/
+
+# Subject response exports kept locally during dev — don't push
+responses_local/

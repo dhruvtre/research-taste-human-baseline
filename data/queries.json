@@ -1,0 +1,104 @@
+[
+  {
+    "base_id": "2601.05175_fw0_d0",
+    "paper_id": "2601.05175",
+    "research_goal": "The overarching research goal of this paper is to develop an efficient and adaptive video understanding framework that selectively applies chain-of-thought reasoning only when necessary, rather than unconditionally for all inputs. Specifically, the authors aim to create a system that can automatically determine when explicit step-by-step reasoning provides genuine benefits for video understanding tasks versus when direct answering is sufficient, thereby achieving both high accuracy on challenging reasoning-intensive problems and improved computational efficiency on perception-oriented tasks.",
+    "current_progress": [
+      {
+        "text": "For RL-trained video models, direct answering often matches or even surpasses CoT performance, despite CoT producing step-by-step analyses at a higher computational cost.",
+        "key_result": "Analysis of existing video reasoning models (Video-R1, Time-R1, VideoChat-R1) showed that direct inference often matches or outperforms CoT inference on perception-oriented benchmarks like VideoMME and LongVideoBench, while generating significantly fewer tokens (e.g., 17.6 vs 386 tokens for Video-R1). Consistent CoT gains were primarily observed only on reasoning-intensive benchmarks like VideoMMMU.",
+        "citation": "Section 3.2 (Preliminaries - Analysis of Existing Video Reasoning Models), Table 1"
+      },
+      {
+        "text": "A \"thinking once, answering twice\" training paradigm that supervises both initial and reviewed answers eliminates the need for per-sample think/no-think labels and yields more stable training than traditional mode-switching approaches.",
+        "key_result": "The proposed dual-answer training approach achieved superior performance compared to training-based mode-switching strategies (inspired by AdaptThink). VideoAuto-R1 consistently outperformed the training-based variant across benchmarks (e.g., 58.6% vs 55.7% on VideoMMMU) and avoided mode collapse issues, while the training-based approach showed unstable think ratios (e.g., only 1% on VideoMME, 31% on VideoMMMU).",
+        "citation": "Section 4.1 (Method - Thinking Once, Answering Twice), Section 5.3 (Experiments - Comparison with Other Adaptive Reasoning Strategies), Table 7"
+      },
+      {
+        "text": "A confidence-based early-exit mechanism using length-normalized mean log probability of the initial answer can effectively determine when to invoke CoT reasoning, with the confidence score correlating with mode-switch accuracy.",
+        "key_result": "The confidence score of the initial answer strongly correlated with task difficulty: perception-oriented benchmarks showed high average confidence (>93% on MVBench and MMVU) with low think ratios (~25-39%), while reasoning-intensive VideoMMMU showed lower confidence (87%) with higher think ratio (51%). The mechanism achieved 94-100% recall on \"think-needed\" samples where the initial answer was wrong but the reviewed answer was correct.",
+        "citation": "Section 4.3 (Method - Inference: Confidence-Based Early Exit), Section 5.3 (Experiments - Analysis of Confidence-Based Early Exit Mechanism), Table 8"
+      },
+      {
+        "text": "VideoAuto-R1 achieves state-of-the-art accuracy with significantly improved efficiency by reasoning only when necessary, reducing average response length while maintaining or improving performance.",
+        "key_result": "VideoAuto-R1 achieved state-of-the-art results across benchmarks while reducing average response length from ~149 tokens (RL with thinking baseline) to 44 tokens. On VideoMMMU, it improved accuracy from 54.7% to 58.6% (+3.9%) compared to the Qwen2.5-VL baseline, and on VideoMME from 66.0% to 67.3% (+1.3%). The model adaptively activated thinking mode based on task complexity: 25% on perception-oriented MVBench vs 51% on reasoning-heavy VideoMMMU.",
+        "citation": "Section 5.2 (Experiments - Main Results), Tables 2-4, Abstract"
+      },
+      {
+        "text": "Assigning higher weight to the reviewed answer (w₂ > w₁) in the dual-answer reward and including a fallback tolerance mechanism improves model performance compared to equal weighting.",
+        "key_result": "Asymmetric reward weighting (0.9:1.1 for w₁:w₂) with fallback bonus (α=0.3) achieved the best performance across benchmarks: 67.3% on VideoMME, 58.6% on VideoMMMU, and 60.0 mIoU on Charades-STA. This outperformed equal weighting (1:1) which achieved 66.1%, 56.1%, and 58.3% respectively. The fallback reward consistently improved results across all tested weight ratios.",
+        "citation": "Section 5.3 (Experiments - Ablation Study of Dual-Answer Reward Design), Table 9, Appendix Section on Reward Analysis"
+      },
+      {
+        "text": "Direct RL training without cold-start SFT on chain-of-thought data is more effective than SFT followed by RL for video reasoning tasks.",
+        "key_result": "Direct RL training achieved 66.1% on VideoMME, 71.2% on MVBench, and 56.4% on VideoMMMU. In contrast, SFT on Video-R1-CoT data degraded the baseline (60.1%, 64.0%, 53.8% respectively), and SFT→RL performed worse than direct RL (61.7%, 64.3%, 53.5%). This demonstrated that low-quality CoT supervision can distort strong base models and create poor initialization for RL.",
+        "citation": "Appendix Section A.5 (Analysis of the Impact of Cold-Start SFT), Table 12"
+      }
+    ],
+    "rephrased_option_1": "Incorporate answer confidence calibration into the training objective so that the model learns to assign high confidence to direct answers for simple inputs and low confidence for complex inputs requiring multi-step reasoning.",
+    "rephrased_option_2": "Investigate how reflection-like reasoning behaviors emerge and generalize by applying interventions during the training phase or incorporating supervision at intermediate reasoning steps."
+  },
+  {
+    "base_id": "2601.18207_fw8_d1",
+    "paper_id": "2601.18207",
+    "research_goal": "To develop and demonstrate an environment for training reinforcement learning-based search agents to answer scientific questions by searching and reasoning over biomedical research papers, including creating the necessary datasets, retrieval corpus, and benchmarks to enable this capability.",
+    "current_progress": [
+      {
+        "text": "RLVR training of search agents leads to stronger performance on scientific paper question-answering compared to non-RL baselines including direct LLM inference, chain-of-thought prompting, retrieval augmented generation (RAG), Search-o1, and PaperQA2.",
+        "key_result": "RLVR training (Search-R1) achieved the strongest results across all baselines. For 3B models, RL improved over RAG by 9.6 and 5.5 points for PaperSearchQA and BioASQ respectively. For 7B models, the difference was 14.5 and 9.3 points. On PaperSearchQA, Search-R1 achieved 41.6% (3B) and 51.0% (7B) accuracy compared to RAG's 32.0% (3B) and 36.5% (7B).",
+        "citation": "Section 4 (Results), specifically Section 4.2 (Quantitative Results) and Table 1"
+      },
+      {
+        "text": "Factoid question-answer pairs with verifiable answers can serve as effective training data for reinforcement learning with verifiable rewards (RLVR) methods for scientific literature search agents.",
+        "key_result": "The automatically generated PaperSearchQA dataset with 54,907 training samples of factoid QAs successfully enabled RLVR training that outperformed all baseline methods. The dataset's design with unambiguous factoid answers allowed for simple exact-match reward computation (binary 0/1), which proved sufficient for effective RL training as demonstrated by the 9.6-14.5 point improvements over RAG baselines.",
+        "citation": "Section 3.1 (Dataset Construction) and Section 4.2 (Quantitative Results)"
+      },
+      {
+        "text": "Search agents trained with RLVR on scientific papers will exhibit emergent behaviors including explicit planning about query rewriting, reasoning about questions before retrieval, and verification when the model already has an initial answer.",
+        "key_result": "Manual review of reasoning traces revealed three prevalent patterns: (1) explicit planning and keyword extraction was very common in later training, where models extracted keywords and combined them into search queries; (2) reasoning before search, where LLMs reasoned about questions using parametric knowledge before performing search; (3) verification of in-parameter knowledge, where models performed search to verify initial answers they already knew. The study notes that \"behavior 1 becomes much more common\" with more training.",
+        "citation": "Section 4.3 (Qualitative Results) and Figure 3"
+      },
+      {
+        "text": "Paraphrasing questions during dataset construction to avoid exact keyword matching from source documents increases dataset difficulty and is beneficial for training robust search agents.",
+        "key_result": "For Search-R1 trained on PaperSearchQA, non-paraphrased questions scored 57.2% while paraphrased questions scored 44.9%, demonstrating a 12.3 point difference. This highlights the importance of paraphrasing for sustaining question difficulty and preventing agents from relying on simple keyword matching.",
+        "citation": "Section 4.2 (Quantitative Results), subsection \"Paraphrasing in data construction is beneficial\""
+      }
+    ],
+    "rephrased_option_1": "Apply mitigations to the data generation methodology by excluding problematic question categories identified through human review or by designing a workflow to retrieve all relevant papers to check for conflicts.",
+    "rephrased_option_2": "Train a more agentic model capable of planning, deciding when to invoke tools, and coordinating tool use more effectively to enable better credit assignment and more efficient inference-time computation."
+  },
+  {
+    "base_id": "2602.02366_fw0_d0",
+    "paper_id": "2602.02366",
+    "research_goal": "To demonstrate that large language models can acquire complex reasoning capabilities through in-context learning mechanisms—specifically by learning compressed key-value cache representations (prefix tuning)—without modifying pretrained model weights, thereby overcoming the scaling limitations of traditional exemplar-based in-context learning while achieving comparable or superior performance to in-weight adaptation methods with greater efficiency in terms of data, parameters, and inference cost.",
+    "current_progress": [
+      {
+        "text": "Prefix tuning can enable LLMs to acquire complex reasoning capabilities without modifying pretrained weights and without overloading the context window, matching or surpassing in-weight adaptation methods.",
+        "key_result": "ReasonCache (prefix tuning for reasoning) matches or exceeds LoRA and supervised fine-tuning on challenging reasoning benchmarks: achieves 41.92% on GPQA-Diamond (surpassing both LoRA and full SFT), and outperforms LoRA on GSM8K and MATH while keeping all pretrained weights frozen. On AIME 24/25, it preserves baseline accuracy (~13%) while in-weight learning degrades performance (~10%).",
+        "citation": "Section 4.1 (Experimental Results - Main Results), Figure 1 (teaser), Figure 3 (results_main_fig)"
+      },
+      {
+        "text": "ReasonCache is more data-efficient than in-weight learning methods, requiring substantially less training data to achieve comparable accuracy.",
+        "key_result": "ReasonCache requires 59% less data than LoRA to reach 50% accuracy on GSM8K. It traces the Pareto frontier of accuracy versus training dataset size across nearly four orders of magnitude, matching ICL's data efficiency at low data while continuing to scale with additional data like in-weight methods.",
+        "citation": "Section 4.2 (Data Efficiency), Figure 4 (data_efficiency_plot)"
+      },
+      {
+        "text": "ReasonCache is more inference-efficient than in-context learning, achieving better accuracy at substantially lower computational cost.",
+        "key_result": "ReasonCache outperforms the best ICL configuration by 44.8 percentage points while using 90% less total inference compute on GSM8K. On GPQA-Diamond, it achieves 11% higher accuracy than SFT while generating 34% shorter responses, directly reducing inference compute and monetary expense.",
+        "citation": "Section 4.3 (Inference Efficiency), Figure 5 (inference_cost), Figure 6 (verbosity)"
+      },
+      {
+        "text": "ReasonCache is more parameter-efficient than LoRA, achieving higher accuracy with fewer trainable parameters.",
+        "key_result": "To reach a target test accuracy of 50% on GSM8K, ReasonCache requires 46% fewer parameters than LoRA. Under matched parameter budgets, ReasonCache consistently dominates LoRA across the entire accuracy-parameter curve and continues to improve as the budget increases while LoRA saturates early.",
+        "citation": "Section 4.4 (Parameter Efficiency), Figure 7 (acc_vs_params)"
+      },
+      {
+        "text": "Prefix tuning can be strictly more expressive than LoRA due to an input-dependent carrier bottleneck in low-rank weight updates.",
+        "key_result": "Theoretical proof (Theorem 5.1) shows that prefix tuning is strictly more expressive when m > min{t_X, r}, where m is prefix length, t_X is context rank, and r is LoRA rank. Empirically validated: ReasonCache increases the effective rank of learned representations by approximately 20% relative to SFT and LoRA. Learned prefix values place 70-90% of their energy outside the dominant value subspace used by the base model.",
+        "citation": "Section 5 (Theoretical Perspectives), Theorem 5.1, Section 5.4 (Empirical Evidence), Figures 8-10 (effective_dimension, prefix_energy, effective_rank)"
+      }
+    ],
+    "rephrased_option_1": "Explore the proposed method as a post-training approach to acquire skills beyond reasoning capabilities.",
+    "rephrased_option_2": "Explore methods that explicitly test generalizability and scalability, and incorporate them as optimization objectives."
+  }
+]

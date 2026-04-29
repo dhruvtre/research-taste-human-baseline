@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A tool to share input on which future research directions should projects pursue, constructed for a Lossfunk research project.">
+  <title>Research Taste - Human Baseline</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='4' fill='%23f6f1e7'/><text x='16' y='22' text-anchor='middle' font-family='Georgia,serif' font-style='italic' font-size='18' fill='%238a2a1f'>r</text></svg>">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="app">
+
+    <!-- ============================================================
+         View: intake (initial)
+         Subject identifies themselves and signs two attestations.
+         Submit advances to instructions.
+         ============================================================ -->
+    <section id="view-intake" class="view active">
+      <p class="greeting">
+        Hi <span aria-hidden="true">👋</span>! My name is
+        <a href="https://x.com/dhruvtre" target="_blank" rel="noopener noreferrer">Dhruv</a>,
+        a researcher at
+        <a href="https://lossfunk.com" target="_blank" rel="noopener noreferrer">Lossfunk</a>.
+      </p>
+      <h1 class="section-title">Before we begin.</h1>
+      <p class="intake-intro">
+        Thank you for taking the time to help me on my project on
+        <i>research taste</i>. Please share the following details to attribute your responses,
+        and two short attestations. Everything you submit stays in this browser
+        until you choose to download it.
+      </p>
+
+      <form id="intake-form" class="intake-form" novalidate>
+        <div class="intake-form-fields">
+        <div class="intake-field">
+          <label for="intake-name" class="intake-field__label">Name</label>
+          <input type="text" id="intake-name" name="name" required autocomplete="name">
+        </div>
+
+        <div class="intake-field">
+          <label for="intake-qualification" class="intake-field__label">
+            Highest qualification in ML or related
+          </label>
+          <select id="intake-qualification" name="qualification" required>
+            <option value="" disabled selected>Choose one</option>
+            <option value="bachelors">Bachelor's</option>
+            <option value="masters">Master's</option>
+            <option value="phd_student">PhD student</option>
+            <option value="phd">PhD</option>
+            <option value="postdoc">Postdoc</option>
+            <option value="faculty">Faculty / Professor</option>
+            <option value="other">Self-taught / Other</option>
+          </select>
+        </div>
+
+        <div class="intake-field">
+          <label for="intake-years" class="intake-field__label">Years in ML research</label>
+          <input type="number" id="intake-years" name="years_ml_experience"
+            required min="0" max="50" step="1">
+        </div>
+
+        <fieldset class="intake-attestations">
+          <legend class="visually-hidden">Attestations</legend>
+
+          <label class="attestation">
+            <input type="checkbox" name="attestation_no_tools" required>
+            <span>
+              I will not use search engines, LLMs, or other reference tools while
+              answering. I will rely only on my own judgement and the context
+              provided in each query.
+            </span>
+          </label>
+
+          <label class="attestation">
+            <input type="checkbox" name="attestation_partial_ok" required>
+            <span>
+              I understand my responses are saved in this browser and that I can
+              download them at any time, including before I finish all queries.
+            </span>
+          </label>
+        </fieldset>
+        </div>
+
+        <button type="submit" class="btn">Continue</button>
+      </form>
+    </section>
+
+    <!-- ============================================================
+         View: instructions
+         Static prose describing the task; reveals total query count.
+         "Begin reading" advances to the first query.
+         ============================================================ -->
+    <section id="view-instructions" class="view">
+      <p class="eyebrow">Before you start the task, a few notes.</p>
+      <h1 class="section-title">Please read these carefully.</h1>
+
+      <div class="instructions-prose">
+        <p>
+          Each query presents a real ML paper's research goal and the
+          hypotheses it has tested with key results, then two possible
+          research directions to pursue next. Your job is to pick the one
+          you'd recommend for that project.
+        </p>
+
+        <p class="eyebrow">You should also know</p>
+        <ol class="instructions-list">
+          <li>
+            Once you submit a query, you can't go back to revise it.
+          </li>
+          <li>
+            Progress saves automatically in this browser. Refresh or close
+            the tab and come back &mdash; your answers stick.
+          </li>
+          <li>
+            The download button (bottom right) exports a JSON file with
+            everything you've answered. Download mid-session if you need
+            to stop early.
+          </li>
+          <li>
+            Once you have the downloaded file, please email it to me at
+            <a href="mailto:dhruv.trehan@lossfunk.com">dhruv.trehan@lossfunk.com</a>.
+          </li>
+          <li>
+            Responses are saved locally in your browser and only reach me
+            when you download the JSON file and send it back.
+          </li>
+          <li>
+            Your name and other identifying details won't appear in the
+            paper. Only anonymized aggregate results are reported.
+          </li>
+          <li>
+            Please do not use any tools while doing this task. We're measuring your direct judgement.
+            If a term is unfamiliar, decide from context. Best effort beats looking it up.
+          </li>
+        </ol>
+      </div>
+
+      <dl class="instructions-meta">
+        <div>
+          <dt>Total queries</dt>
+          <dd id="instructions-total">—</dd>
+        </div>
+        <div>
+          <dt>Estimated time</dt>
+          <dd>30&ndash;45 minutes</dd>
+        </div>
+      </dl>
+
+      <button type="button" id="instructions-start" class="btn">Begin reading</button>
+    </section>
+
+    <!-- ============================================================
+         View: query (re-rendered for each query)
+         Progress bar at top, research context in the middle,
+         two options, submit at the bottom.
+         ============================================================ -->
+    <section id="view-query" class="view">
+      <div class="progress">
+        <span class="progress__label">
+          Query
+          <span class="progress__roman" id="query-progress-current">&mdash;</span>
+          /
+          <span class="progress__roman" id="query-progress-total">&mdash;</span>
+        </span>
+        <div class="progress__bar">
+          <div class="progress__bar-fill" id="query-progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="query-layout">
+        <div class="query-context">
+          <div class="query-section">
+            <h2 class="query-section__heading">Research goal</h2>
+            <div class="query-section__body" id="query-research-goal"></div>
+          </div>
+
+          <div class="query-section">
+            <h2 class="query-section__heading">Hypotheses tested &amp; key results</h2>
+            <ol class="hypotheses-list" id="query-hypotheses-list"></ol>
+          </div>
+        </div>
+
+        <div class="query-decision">
+          <p class="options-prompt">
+            Which research direction should this project pursue next?
+          </p>
+
+          <div class="options" id="query-options">
+            <button type="button" class="option" data-slot="A" id="option-a">
+              <span class="option__letter">Option A</span>
+              <span class="option__text" id="option-a-text"></span>
+            </button>
+            <button type="button" class="option" data-slot="B" id="option-b">
+              <span class="option__letter">Option B</span>
+              <span class="option__text" id="option-b-text"></span>
+            </button>
+          </div>
+
+          <div class="query-actions">
+            <button type="button" id="query-submit" class="btn" disabled>
+              Submit &amp; continue
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hypothesis item template — cloned by JS for each item in current_progress. -->
+    <template id="hypothesis-template">
+      <li class="hypothesis">
+        <span class="hypothesis__text"></span>
+        <span class="hypothesis__result">
+          <span class="hypothesis__result-label">Key result</span>
+          <span class="hypothesis__result-text"></span>
+        </span>
+      </li>
+    </template>
+
+    <!-- ============================================================
+         View: end
+         Thank-you message and the final download button.
+         ============================================================ -->
+    <section id="view-end" class="view">
+      <h1 class="end-title">Thank you.</h1>
+      <p class="end-message">
+        Your responses are saved in this browser. Click below to download
+        them as a JSON file, then email it to me at
+        <a href="mailto:dhruv.trehan@lossfunk.com">dhruv.trehan@lossfunk.com</a>.
+        If you've already downloaded mid-session, downloading now will give
+        you the complete record.
+      </p>
+      <button type="button" id="end-download" class="btn">Download responses</button>
+    </section>
+
+    <!-- Persistent download button (revealed after intake, supports partial exports). -->
+    <button id="download-button" type="button" hidden>&darr; Download progress</button>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

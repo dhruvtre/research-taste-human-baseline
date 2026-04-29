@@ -1,0 +1,778 @@
+/* ============================================================
+   Human Baseline Collector — styles.css
+   Vanilla CSS, no framework, no preprocessor. Single file.
+
+   Aesthetic direction: rare-books library. Cream paper, ink
+   typography, a single oxidized-red accent. Body content sets
+   in a screen-optimized serif (Newsreader) at a comfortable
+   reading measure; UI chrome uses a calm sans (Public Sans)
+   with judicious small caps. Restraint over ornament — the
+   research content is meant to do the visual work.
+
+   Section order matches the existing skeleton:
+     1. Web fonts
+     2. Design tokens (vars)
+     3. Reset / base
+     4. Layout
+     5. View switching
+     6. Shared typography
+     7. Intake form
+     8. Buttons (shared)
+     9. Instructions view
+    10. Query view
+    11. End view
+    12. Persistent controls (download button)
+    13. Utility
+   ============================================================ */
+
+
+/* ----- Web fonts -------------------------------------------- */
+
+@import url('https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Public+Sans:wght@400;500;600&display=swap');
+
+
+/* ----- Design tokens ---------------------------------------- */
+
+:root {
+  /* Palette — paper and ink */
+  --paper:           #f6f1e7;       /* warm cream background */
+  --paper-tint:      #efe7d2;       /* slightly warmer for selected/highlight */
+  --ink:             #1a1714;       /* primary text — warm black */
+  --ink-soft:        #4a423a;       /* secondary text */
+  --ink-faint:       #8a8175;       /* tertiary / metadata */
+  --rule:            #c9c0a8;       /* subtle horizontal lines */
+  --rule-soft:       #e0d8c2;       /* even softer separator */
+  --accent:          #8a2a1f;       /* oxidized library red */
+  --accent-soft:     rgba(138, 42, 31, 0.08);
+
+  /* Type families */
+  --font-serif:      'Newsreader', 'Iowan Old Style', 'Charter', Georgia, serif;
+  --font-sans:       'Public Sans', 'Helvetica Neue', system-ui, sans-serif;
+
+  /* Type scale (modular, modest steps) */
+  --size-xs:         0.75rem;       /* 12px */
+  --size-sm:         0.875rem;      /* 14px */
+  --size-base:       1rem;          /* 16px */
+  --size-md:         1.125rem;      /* 18px — body reading size */
+  --size-lg:         1.375rem;      /* 22px */
+  --size-xl:         1.875rem;      /* 30px */
+  --size-2xl:        2.5rem;        /* 40px */
+  --size-display:    3.5rem;        /* 56px — used only on the end title */
+
+  /* Spacing scale */
+  --space-1:         0.25rem;
+  --space-2:         0.5rem;
+  --space-3:         0.75rem;
+  --space-4:         1rem;
+  --space-5:         1.5rem;
+  --space-6:         2rem;
+  --space-7:         3rem;
+  --space-8:         4rem;
+  --space-9:         6rem;
+
+  /* Layout */
+  --measure:         42rem;         /* optical reading column */
+  --measure-wide:    68rem;         /* main app width — used for the query view's two-pane layout */
+
+  /* Motion */
+  --ease-soft:       cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast:   180ms;
+  --duration-base:   280ms;
+}
+
+
+/* ----- Reset / base ----------------------------------------- */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-serif);
+  font-size: var(--size-md);
+  line-height: 1.65;
+  font-feature-settings: 'kern', 'liga', 'onum';   /* old-style figures in body */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img, svg { display: block; max-width: 100%; }
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  background: none;
+  border: 0;
+  cursor: pointer;
+  padding: 0;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: color var(--duration-fast) var(--ease-soft);
+}
+
+a:hover { color: var(--ink); }
+
+::selection {
+  background: var(--accent);
+  color: var(--paper);
+}
+
+
+/* ----- Layout ----------------------------------------------- */
+
+#app {
+  max-width: var(--measure-wide);
+  margin: 0 auto;
+  padding: var(--space-7) var(--space-6);
+  position: relative;
+}
+
+@media (max-width: 700px) {
+  #app { padding: var(--space-5) var(--space-4); }
+}
+
+
+/* ----- View switching --------------------------------------- */
+
+.view {
+  display: none;
+  animation: fade-up var(--duration-base) var(--ease-soft);
+}
+
+.view.active { display: block; }
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ----- Shared typography ------------------------------------ */
+
+/* Small-caps section labels in the sans face. Used across views. */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 var(--space-3);
+}
+
+.section-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 500;
+  font-size: var(--size-xl);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--space-3);
+  color: var(--ink);
+}
+
+/* Conversational opener used at the top of the intake view. Styled like an
+   eyebrow — small caps, sans-serif, letter-spaced — so it sits as a subtle
+   page label rather than a paragraph. */
+.greeting {
+  font-family: var(--font-sans);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 var(--space-3);
+}
+
+/* Intake-page intro paragraph below the section title. Same styling as the
+   instructions-prose opening paragraph for visual continuity across pages. */
+.intake-intro {
+  font-family: var(--font-serif);
+  font-size: var(--size-base);
+  line-height: 1.65;
+  color: var(--ink);
+  margin: 0 0 var(--space-4);
+  max-width: var(--measure);
+}
+
+p {
+  max-width: var(--measure);
+  margin: 0 0 var(--space-4);
+}
+
+/* ----- Intake form ------------------------------------------ */
+
+#view-intake { max-width: var(--measure); }
+
+.intake-form {
+  max-width: 40rem;
+}
+
+/* Boxed wrapper around all fields + attestations. Submit button sits outside. */
+.intake-form-fields {
+  border: 1px solid var(--rule);
+  padding: var(--space-5);
+  margin-bottom: var(--space-5);
+}
+
+.intake-field {
+  margin-bottom: var(--space-4);
+}
+
+.intake-field__label {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: var(--space-2);
+}
+
+.intake-field input[type='text'],
+.intake-field input[type='number'],
+.intake-field select {
+  width: 100%;
+  padding: var(--space-2) 0;
+  font-family: var(--font-serif);
+  font-size: var(--size-base);
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  color: var(--ink);
+  border-radius: 0;
+  transition: border-color var(--duration-fast) var(--ease-soft);
+}
+
+.intake-field input:focus,
+.intake-field select:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+}
+
+.intake-field input::placeholder {
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+/* Custom select: hide native arrow, draw a small chevron via background-image,
+   and dim the placeholder option (when selected and required is unsatisfied). */
+.intake-field select {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  padding-right: 1.25rem;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4l4 4 4-4' stroke='%231a1714' fill='none' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-position: right 0 center;
+  background-repeat: no-repeat;
+}
+
+.intake-field select:invalid {
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+.intake-attestations {
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) 0 0;
+  border: 0;
+  border-top: 1px solid var(--rule-soft);
+  min-width: 0;
+}
+
+.attestation {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-family: var(--font-serif);
+  font-size: var(--size-sm);
+  color: var(--ink-soft);
+  line-height: 1.55;
+  margin-bottom: var(--space-2);
+  cursor: pointer;
+}
+
+.attestation input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--ink-soft);
+  background: var(--paper);
+  cursor: pointer;
+  margin-top: 0.3em;
+  flex-shrink: 0;
+  transition: background var(--duration-fast) var(--ease-soft),
+              border-color var(--duration-fast) var(--ease-soft);
+}
+
+.attestation input[type='checkbox']:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='%23f6f1e7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M3.5 8.5l3 3 6-7'/></svg>");
+  background-size: 80% 80%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.attestation input[type='checkbox']:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+
+/* ----- Buttons (shared) ------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--size-sm);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  border-radius: 0;
+  transition: background var(--duration-fast) var(--ease-soft),
+              border-color var(--duration-fast) var(--ease-soft),
+              color var(--duration-fast) var(--ease-soft);
+}
+
+.btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.btn:disabled {
+  background: var(--ink-faint);
+  border-color: var(--ink-faint);
+  cursor: not-allowed;
+}
+
+/* ----- Instructions view ------------------------------------ */
+
+#view-instructions { max-width: var(--measure); }
+
+.instructions-prose {
+  font-family: var(--font-serif);
+  font-size: var(--size-base);
+  line-height: 1.65;
+  color: var(--ink);
+}
+
+/* Drop cap on the first paragraph of intake and instructions — disabled on
+   narrow screens. */
+@media (min-width: 600px) {
+  .instructions-prose > p:first-of-type::first-letter,
+  .intake-intro::first-letter {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 4em;
+    line-height: 0.85;
+    float: left;
+    margin: 0.05em 0.12em 0 -0.05em;
+    color: var(--accent);
+  }
+}
+
+/* Sub-section labels inside the instructions prose. Reuses .eyebrow but with
+   in-flow margins so it can sit between paragraphs / lists. */
+.instructions-prose .eyebrow {
+  margin-top: var(--space-5);
+  margin-bottom: var(--space-3);
+}
+
+/* Numbered list inside instructions. Native decimal markers in muted ink,
+   slightly smaller font than prose so the list reads as scannable notes
+   rather than flowing copy. */
+.instructions-list {
+  list-style: decimal;
+  padding-left: 1.6em;
+  margin: 0 0 var(--space-4);
+}
+
+.instructions-list li {
+  margin-bottom: var(--space-3);
+  font-size: var(--size-base);
+  line-height: 1.6;
+  color: var(--ink);
+}
+
+.instructions-list li::marker {
+  color: var(--ink-faint);
+}
+
+.instructions-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  gap: var(--space-5);
+  font-family: var(--font-sans);
+  border-top: 1px solid var(--rule-soft);
+  padding-top: var(--space-5);
+  margin-top: var(--space-6);
+}
+
+.instructions-meta dt {
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: var(--space-2);
+}
+
+.instructions-meta dd {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: var(--size-md);
+  color: var(--ink);
+  font-feature-settings: 'lnum';   /* lining figures for stats */
+}
+
+#instructions-start {
+  margin-top: var(--space-6);
+}
+
+
+/* ----- Query view ------------------------------------------- */
+
+/* Top-of-view progress: roman numerals on the left, thin bar on the right. */
+.progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin-bottom: var(--space-7);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--rule);
+}
+
+.progress__label {
+  font-family: var(--font-sans);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.progress__roman {
+  color: var(--ink);
+  font-feature-settings: 'lnum';
+}
+
+.progress__bar {
+  flex: 1;
+  height: 1px;
+  background: var(--rule-soft);
+  position: relative;
+}
+
+.progress__bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--progress, 0%);
+  background: var(--accent);
+  transition: width var(--duration-base) var(--ease-soft);
+}
+
+/* Two-pane layout for the query view: long-form context on the left,
+   decision panel on the right. The right pane is sticky so it stays
+   visible while the subject scrolls through long context. Falls back
+   to a single column on narrow viewports. */
+.query-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-7);
+  align-items: start;
+}
+
+.query-decision {
+  position: sticky;
+  top: var(--space-6);
+  max-height: calc(100vh - var(--space-8));
+  overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+  .query-layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+  .query-decision {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
+}
+
+/* Reading column for the research context (left pane). */
+.query-context {
+  max-width: var(--measure);
+}
+
+.query-section { margin-bottom: var(--space-6); }
+
+.query-section__heading {
+  font-family: var(--font-sans);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 var(--space-3);
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: var(--space-2);
+}
+
+.query-section__body {
+  font-family: var(--font-serif);
+  font-size: var(--size-md);
+  line-height: 1.7;
+  color: var(--ink);
+}
+
+/* Numbered hypothesis list. Counters give us proper figures. */
+.hypotheses-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  counter-reset: hypothesis;
+}
+
+.hypothesis {
+  position: relative;
+  padding-left: 2.5rem;
+  margin-bottom: var(--space-5);
+  counter-increment: hypothesis;
+}
+
+.hypothesis::before {
+  content: counter(hypothesis);
+  position: absolute;
+  left: 0;
+  top: 0.05em;
+  width: 2rem;
+  text-align: right;
+  padding-right: var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--size-sm);
+  font-feature-settings: 'lnum', 'tnum';
+  color: var(--ink-faint);
+}
+
+.hypothesis__text {
+  display: block;
+  font-style: italic;
+  color: var(--ink);
+  margin: 0 0 var(--space-2);
+}
+
+.hypothesis__result {
+  display: block;
+  color: var(--ink-soft);
+}
+
+.hypothesis__result-label {
+  font-family: var(--font-sans);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-right: var(--space-2);
+}
+
+/* Italic prompt above the option pair. */
+.options-prompt {
+  margin: 0 0 var(--space-5);
+  font-family: var(--font-serif);
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: var(--size-md);
+  line-height: 1.5;
+}
+
+/* Two-option layout: stacked vertically inside the decision panel. */
+.options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.option {
+  position: relative;
+  padding: var(--space-6) var(--space-5) var(--space-5);
+  background: transparent;
+  border: 1px solid var(--rule);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-serif);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: background var(--duration-fast) var(--ease-soft),
+              border-color var(--duration-fast) var(--ease-soft),
+              box-shadow var(--duration-fast) var(--ease-soft);
+}
+
+.option:hover {
+  border-color: var(--ink-soft);
+  background: var(--paper-tint);
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.option__letter {
+  font-family: var(--font-sans);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.option__text {
+  font-size: var(--size-md);
+  line-height: 1.65;
+  color: var(--ink);
+  margin: 0;
+}
+
+.option.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
+
+.option.is-selected .option__letter {
+  color: var(--accent);
+}
+
+.query-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--rule-soft);
+}
+
+
+/* ----- End view --------------------------------------------- */
+
+#view-end {
+  text-align: center;
+  padding-top: var(--space-7);
+  max-width: 36rem;
+  margin: 0 auto;
+}
+
+.end-title {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--size-display);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin: 0 0 var(--space-5);
+}
+
+.end-message {
+  font-family: var(--font-serif);
+  font-size: var(--size-md);
+  color: var(--ink-soft);
+  line-height: 1.7;
+  margin: 0 auto var(--space-7);
+}
+
+
+/* ----- Persistent controls (download button) ---------------- */
+
+#download-button {
+  position: fixed;
+  bottom: var(--space-5);
+  right: var(--space-5);
+  font-family: var(--font-sans);
+  font-size: var(--size-xs);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  color: var(--ink-soft);
+  cursor: pointer;
+  z-index: 10;
+  transition: border-color var(--duration-fast) var(--ease-soft),
+              color var(--duration-fast) var(--ease-soft);
+}
+
+#download-button:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+#download-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+
+/* ----- Utility ---------------------------------------------- */
+
+[hidden] { display: none !important; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Inline utility classes — currently unused but kept for editor ergonomics.
+   Uncomment any you need.
+
+.text-faint  { color: var(--ink-faint); }
+.text-soft   { color: var(--ink-soft); }
+.text-accent { color: var(--accent); }
+.italic      { font-style: italic; }
+.serif       { font-family: var(--font-serif); }
+.sans        { font-family: var(--font-sans); }
+*/
