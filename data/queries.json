@@ -1,42 +1,61 @@
 [
   {
-    "base_id": "2601.05175_fw0_d0",
-    "paper_id": "2601.05175",
-    "research_goal": "The overarching research goal of this paper is to develop an efficient and adaptive video understanding framework that selectively applies chain-of-thought reasoning only when necessary, rather than unconditionally for all inputs. Specifically, the authors aim to create a system that can automatically determine when explicit step-by-step reasoning provides genuine benefits for video understanding tasks versus when direct answering is sufficient, thereby achieving both high accuracy on challenging reasoning-intensive problems and improved computational efficiency on perception-oriented tasks.",
+    "base_id": "2601.21468_fw1_d1",
+    "paper_id": "2601.21468",
+    "research_goal": "To develop a memory management system for long-horizon agentic reasoning that achieves adaptive information density through visual layout, enabling more efficient utilization of limited context budgets by decoupling semantic content from token cost.",
     "current_progress": [
       {
-        "text": "For RL-trained video models, direct answering often matches or even surpasses CoT performance, despite CoT producing step-by-step analyses at a higher computational cost.",
-        "key_result": "Analysis of existing video reasoning models (Video-R1, Time-R1, VideoChat-R1) showed that direct inference often matches or outperforms CoT inference on perception-oriented benchmarks like VideoMME and LongVideoBench, while generating significantly fewer tokens (e.g., 17.6 vs 386 tokens for Video-R1). Consistent CoT gains were primarily observed only on reasoning-intensive benchmarks like VideoMMMU.",
-        "citation": "Section 3.2 (Preliminaries - Analysis of Existing Video Reasoning Models), Table 1"
+        "text": "Visual memory with adaptive information density improves long-horizon reasoning under tight context budgets compared to textual memory paradigms.",
+        "key_result": "MemOCR outperforms text-based baselines across all settings, achieving 74.6% average accuracy vs. 67.8% for the strongest baseline (MemAgent) at 1024 tokens on 10K context. Under extreme budgets (16 tokens), MemOCR maintains 62.2% accuracy while MemAgent drops to 31.6%, representing a 30.6 percentage point improvement and approximately 8\u00d7 improvement in effective context utilization.",
+        "citation": "Section 4.2 (Overall Performance - RQ1), Table 1"
       },
       {
-        "text": "A \"thinking once, answering twice\" training paradigm that supervises both initial and reviewed answers eliminates the need for per-sample think/no-think labels and yields more stable training than traditional mode-switching approaches.",
-        "key_result": "The proposed dual-answer training approach achieved superior performance compared to training-based mode-switching strategies (inspired by AdaptThink). VideoAuto-R1 consistently outperformed the training-based variant across benchmarks (e.g., 58.6% vs 55.7% on VideoMMMU) and avoided mode collapse issues, while the training-based approach showed unstable think ratios (e.g., only 1% on VideoMME, 31% on VideoMMMU).",
-        "citation": "Section 4.1 (Method - Thinking Once, Answering Twice), Section 5.3 (Experiments - Comparison with Other Adaptive Reasoning Strategies), Table 7"
+        "text": "Visual layout control enhances robustness under tight memory budgets by enabling non-uniform budget allocation.",
+        "key_result": "Removing visual layout from MemOCR causes marked performance degradation, especially at low budgets. At 16 tokens, MemOCR achieves comparable accuracy to textual baselines at 64 tokens, demonstrating an 8\u00d7 token-efficiency gain. The ablation \"MemOCR w/o Visual Layout\" shows substantially larger performance drops as budgets tighten, confirming that robustness comes primarily from layout-guided allocation rather than the visual modality alone.",
+        "citation": "Section 4.3 (Analysis on Visual Robustness - RQ2), Figure 3"
       },
       {
-        "text": "A confidence-based early-exit mechanism using length-normalized mean log probability of the initial answer can effectively determine when to invoke CoT reasoning, with the confidence score correlating with mode-switch accuracy.",
-        "key_result": "The confidence score of the initial answer strongly correlated with task difficulty: perception-oriented benchmarks showed high average confidence (>93% on MVBench and MMVU) with low think ratios (~25-39%), while reasoning-intensive VideoMMMU showed lower confidence (87%) with higher think ratio (51%). The mechanism achieved 94-100% recall on \"think-needed\" samples where the initial answer was wrong but the reviewed answer was correct.",
-        "citation": "Section 4.3 (Method - Inference: Confidence-Based Early Exit), Section 5.3 (Experiments - Analysis of Confidence-Based Early Exit Mechanism), Table 8"
+        "text": "Different layout regions exhibit asymmetric compression-robustness, and MemOCR exploits this by placing important evidence in more visually accessible regions.",
+        "key_result": "Oracle experiments show that injecting ground-truth evidence into the crucial region (H1 headers) consistently outperforms injection into the detailed region (plain body text), with advantages growing as budgets tighten. Training analysis reveals MemOCR shifts evidence density: crucial region precision increases ~1.8\u00d7 while detailed region precision decreases ~0.46\u00d7, while the crucial region remains orders of magnitude shorter, demonstrating adaptive information density.",
+        "citation": "Section 4.4 (Mechanism Verification - RQ3), Figures 4 and 5"
       },
       {
-        "text": "VideoAuto-R1 achieves state-of-the-art accuracy with significantly improved efficiency by reasoning only when necessary, reducing average response length while maintaining or improving performance.",
-        "key_result": "VideoAuto-R1 achieved state-of-the-art results across benchmarks while reducing average response length from ~149 tokens (RL with thinking baseline) to 44 tokens. On VideoMMMU, it improved accuracy from 54.7% to 58.6% (+3.9%) compared to the Qwen2.5-VL baseline, and on VideoMME from 66.0% to 67.3% (+1.3%). The model adaptively activated thinking mode based on task complexity: 25% on perception-oriented MVBench vs 51% on reasoning-heavy VideoMMMU.",
-        "citation": "Section 5.2 (Experiments - Main Results), Tables 2-4, Abstract"
-      },
-      {
-        "text": "Assigning higher weight to the reviewed answer (w₂ > w₁) in the dual-answer reward and including a fallback tolerance mechanism improves model performance compared to equal weighting.",
-        "key_result": "Asymmetric reward weighting (0.9:1.1 for w₁:w₂) with fallback bonus (α=0.3) achieved the best performance across benchmarks: 67.3% on VideoMME, 58.6% on VideoMMMU, and 60.0 mIoU on Charades-STA. This outperformed equal weighting (1:1) which achieved 66.1%, 56.1%, and 58.3% respectively. The fallback reward consistently improved results across all tested weight ratios.",
-        "citation": "Section 5.3 (Experiments - Ablation Study of Dual-Answer Reward Design), Table 9, Appendix Section on Reward Analysis"
-      },
-      {
-        "text": "Direct RL training without cold-start SFT on chain-of-thought data is more effective than SFT followed by RL for video reasoning tasks.",
-        "key_result": "Direct RL training achieved 66.1% on VideoMME, 71.2% on MVBench, and 56.4% on VideoMMMU. In contrast, SFT on Video-R1-CoT data degraded the baseline (60.1%, 64.0%, 53.8% respectively), and SFT→RL performed worse than direct RL (61.7%, 64.3%, 53.5%). This demonstrated that low-quality CoT supervision can distort strong base models and create poor initialization for RL.",
-        "citation": "Appendix Section A.5 (Analysis of the Impact of Cold-Start SFT), Table 12"
+        "text": "Budget-aware training objectives with multiple complementary tasks are necessary for learning robust layout-based memory allocation.",
+        "key_result": "Progressive ablation shows cumulative robustness gains: removing all training objectives yields 37.5% average accuracy at 16 tokens (10K context); using only standard QA (T_std) achieves 32.9%; adding detail-oriented questions (T_augQ) improves to 41.2%; the full model with compressed memory training (T_augM) reaches 62.2%. The low-budget performance drop increases from 16.6% (full model) to 47.1% (T_std only), confirming that multiple training signals are essential for budget-robust behavior.",
+        "citation": "Section 4.5 (Ablation Study over Training Objectives - RQ4), Table 2"
       }
     ],
-    "rephrased_option_1": "Incorporate answer confidence calibration into the training objective so that the model learns to assign high confidence to direct answers for simple inputs and low confidence for complex inputs requiring multi-step reasoning.",
-    "rephrased_option_2": "Investigate how reflection-like reasoning behaviors emerge and generalize by applying interventions during the training phase or incorporating supervision at intermediate reasoning steps."
+    "rephrased_option_1": "Improve the budget allocation policy by introducing more flexible structured text formats.",
+    "rephrased_option_2": "Incorporate multi-objective optimization techniques to enable more effective exploration of the efficiency-performance trade-off."
+  },
+  {
+    "base_id": "2601.16175_fw0_d0",
+    "paper_id": "2601.16175",
+    "research_goal": "To develop and demonstrate a test-time training method that enables language models to discover new state-of-the-art solutions to scientific and engineering problems by continuing to learn on individual test instances, rather than relying solely on frozen models and search heuristics.",
+    "current_progress": [
+      {
+        "text": "Test-time training (TTT) with an entropic objective and PUCT-based reuse can discover new state-of-the-art solutions across diverse scientific problems with continuous rewards, outperforming both frozen-LLM search methods and standard RL approaches.",
+        "key_result": "TTT-Discover achieved new state-of-the-art results in almost all attempted problems: (i) Erd\u0151s' minimum overlap problem (0.380876 vs. 0.380924 previous best), first autocorrelation inequality (1.50287 vs. 1.50314 previous best); (ii) GPUMode TriMul competition (up to 2\u00d7 faster than best human on A100); (iii) AtCoder algorithm competitions (567,062 vs. 566,997 best human on ahc039, 848,414,228 vs. 847,674,723 best human on ahc058); (iv) single-cell denoising (0.71 vs. 0.64 best human). All results achieved with open model gpt-oss-120b, while previous AI results used closed frontier models.",
+        "citation": "Abstract, Section 1 (Introduction), Section 4 (Applications)"
+      },
+      {
+        "text": "The entropic objective J_\u03b2(\u03b8) = E[log E[e^(\u03b2R)]] with adaptive \u03b2 better optimizes for discovery (finding one exceptional solution) compared to standard RL objectives that optimize expected reward, because it strongly favors maximum-reward actions while maintaining training stability.",
+        "key_result": "Ablation studies on TriMul H100 showed: TTT with adaptive entropic objective achieved 1203.10 \u03bcs, significantly outperforming TTT with constant \u03b2=2 (1483.83 \u03bcs), TTT with expected reward objective (1985.67 \u03bcs), and naive RL baseline (5328.73 \u03bcs). The adaptive \u03b2 formulation using KL constraint (\u03b3=ln(2)) allowed the method to automatically adjust exploration-exploitation trade-off based on the difficulty of improvements at each state.",
+        "citation": "Section 3.1 (Naive RL at Test Time), Section 3.2 (TTT-Discover), Section 4.6 (Ablations), Table 4, Figure 4"
+      },
+      {
+        "text": "PUCT-based state reuse that prioritizes states by Q(s) + exploration bonus (where Q uses maximum child reward rather than mean) enables more effective exploration and exploitation compared to simpler reuse strategies or no reuse, because it balances exploiting promising states while maintaining diversity.",
+        "key_result": "Ablation studies showed: PUCT reuse with TTT achieved 1203.10 \u03bcs on TriMul H100, outperforming \u03b5-greedy reuse (1328.89 \u03bcs) and no reuse (5274.03 \u03bcs). The use of maximum child reward in Q(s) rather than mean reward (as in AlphaZero) was critical for discovery tasks where the goal is finding one exceptional solution rather than robust average performance.",
+        "citation": "Section 3.1 (Naive RL at Test Time), Section 3.2 (TTT-Discover), Section 4.6 (Ablations), Appendix A.2 (PUCT Prioritization)"
+      },
+      {
+        "text": "Continuing to train the LLM policy at test time on experience specific to a single problem enables discovering solutions that require ideas beyond the model's training data, whereas frozen-LLM search methods (like evolutionary algorithms) cannot internalize new problem-specific knowledge.",
+        "key_result": "Across all applications, TTT-Discover consistently outperformed Best-of-25600 baseline (same sampling budget, frozen model): mathematics (Erd\u0151s: 0.380876 vs. 0.380906), kernel engineering (TriMul H100: 1161.2 \u03bcs vs. 5390.3 \u03bcs), algorithms (ahc039: 567,062 vs. 554,171), and biology (denoising: 0.71 vs. 0.62). The reward distributions in Figure 1 show TTT-Discover progressively generates better solutions over training steps, while Best-of-N remains static.",
+        "citation": "Section 1 (Introduction), Section 3 (Learning to Discover at Test Time), Section 4 (Applications), Figure 1, Tables 2-6"
+      }
+    ],
+    "rephrased_option_1": "Extend test-time training methods to handle problems with sparse or binary rewards and to non-verifiable domains, beyond the current limitation to continuous reward settings.",
+    "rephrased_option_2": "Extend explicit planning mechanisms to handle stochastic or partially observable settings by integrating lookahead with belief-state inference, uncertainty-aware evaluation, or learned world models."
   },
   {
     "base_id": "2601.18207_fw8_d1",
@@ -68,9 +87,442 @@
     "rephrased_option_2": "Train a more agentic model capable of planning, deciding when to invoke tools, and coordinating tool use more effectively to enable better credit assignment and more efficient inference-time computation."
   },
   {
+    "base_id": "2512.22322_fw0_d0",
+    "paper_id": "2512.22322",
+    "research_goal": "The overarching research goal is to develop a scalable and reliable paradigm for training autonomous GUI agents by shifting from passive, post-hoc verification to proactive, in-situ self-verification. Specifically, the work aims to create Self-Verifying Agents that simultaneously learn to complete complex tasks and curate minimal, decisive snapshot evidence to prove their accomplishment, thereby reducing verification costs and improving reliability in agentic reinforcement learning.",
+    "current_progress": [
+      {
+        "text": "The Self-Verifying Agent paradigm, which shifts verification from passive post-hoc analysis to proactive in-situ self-verification by the agent itself, enables scalable and reliable training of LLM-driven agents for GUI tasks.",
+        "key_result": "SmartSnap achieves performance gains up to 26.08% and 16.66% respectively for 8B and 30B models across model families (LLaMA3.1-8B, Qwen2.5-7B, Qwen3-8B, Qwen3-32B) on AndroidLab. The trained agents (e.g., SmartSnap with Qwen3-8B and Qwen3-32B) achieve competitive performance with much larger models (DeepSeek V3.1 and Qwen3-235B-A22B), demonstrating that the self-verification paradigm fundamentally enhances training efficiency and scalability.",
+        "citation": "Section 4.3 (Main Results), Table 2, Figure 1"
+      },
+      {
+        "text": "The 3C Principles (Completeness, Conciseness, and Creativity) for evidence curation create a synergistic learning loop where the requirement to find and present evidence compels the agent to develop deeper understanding of tasks, as the knowledge required for successful execution and effective proof are deeply intertwined.",
+        "key_result": "Fine-tuning with self-verification (following 3C principles) substantially outperforms vanilla fine-tuning using the Android Instruct dataset across all models. For example, Qwen2.5-7B achieves 30.15% SR with SmartSnap FT versus 20.28% with vanilla FT (+17.83% gain), and Qwen3-8B achieves 26.81% versus 19.56% (+16.66% gain). The qualitative analysis shows agents learn to decompose tasks into actionable checklists and proactively create evidence-oriented actions (e.g., taking snapshots that list target transactions), demonstrating the synergy between task completion and evidence curation.",
+        "citation": "Section 4.3 (Main Results), Table 2; Section 4.4 (Qualitative Analysis, Case Study), Figures 7-8"
+      },
+      {
+        "text": "Grounding evidence in objective, unalterable tool interactions (action-observation pairs) rather than agent self-declarations prevents reward hacking and enables trustworthy verification, as agents cannot fabricate or manipulate the evidence.",
+        "key_result": "The RL training dynamics show consistent improvement in training reward with decreasing intra-group variance, indicating agents learn to complete tasks and curate valid evidence without gaming the system. The number of evidences converges toward 1.5 on average (satisfying the Conciseness principle), and agents learn more compact interaction patterns (decreasing number of agent turns and response length over training). The evidence validity check shows agents successfully navigate toward relevant application screens even when tasks ultimately fail, demonstrating the robustness of the grounded evidence formulation.",
+        "citation": "Section 4.4 (Qualitative Analysis - Behavior Evolution and Performance Variation), Figures 5-6"
+      },
+      {
+        "text": "Intrinsic reward shaping through structured, dense feedback from an LLM/VLM verifier (including evidence validity, strict evidence-to-task grounding, format compliance, and conciseness penalties) accelerates the agent's acquisition of evidence curation skills during reinforcement learning.",
+        "key_result": "RL with SmartSnap's reward shaping consistently improves performance beyond SFT across all model families. For instance, LLaMA3.1-8B improves from 23.91% (FT) to 31.15% (RL), Qwen2.5-7B from 30.15% to 30.43%, Qwen3-8B from 26.81% to 36.23%, and Qwen3-32B from 28.98% to 34.78%. The training reward curves show monotonic improvement with decreasing variance, and agents develop efficient behaviors (fewer turns, shorter responses, minimal evidence sets) that satisfy the reward shaping objectives.",
+        "citation": "Section 3.4 (Evidence Verification and Reward Shaping), Section 4.3 (Main Results), Table 2; Section 4.4 (Qualitative Analysis), Figures 5-6"
+      }
+    ],
+    "rephrased_option_1": "Collect domain-specific training corpora and conduct comprehensive continued pre-training and supervised fine-tuning to prepare foundation models for reinforcement learning on specialized task domains.",
+    "rephrased_option_2": "Investigate methods for creating evaluation criteria that are both rigorous and deterministic while avoiding overly specific or prescriptive constraints."
+  },
+  {
+    "base_id": "2601.02439_fw0_d0",
+    "paper_id": "2601.02439",
+    "research_goal": "The overarching research goal is to develop and validate a large-scale, efficient training environment that enables visual web agents to learn generalizable skills for solving diverse, realistic web navigation tasks through reinforcement learning. This encompasses three interconnected objectives: (1) constructing a sufficiently large and diverse task set with structured evaluation criteria that spans multiple domains and difficulty levels, (2) building a high-throughput asynchronous rollout system that makes large-scale RL training computationally feasible, and (3) demonstrating that simple RL algorithms can leverage this environment to train agents that significantly outperform existing approaches, including proprietary models, on entirely unseen websites.",
+    "current_progress": [
+      {
+        "text": "Domain breadth (diversity across websites and subdomains) improves agent generalization to unseen websites, even when the difficulty mixing ratio is unchanged.",
+        "key_result": "Removing half of the subdomains from the training set (\"exclude domains\") consistently slowed down improvements and lowered the final success rate across all evaluation slices (from 34.5% to 31.0%), despite keeping the same difficulty mixing ratio. This gap persisted even though the number of collected training trajectories (36k) was far smaller than the number of remaining training tasks (~150k), indicating the degradation reflects reduced domain diversity rather than oversampling.",
+        "citation": "Section 5.3, \"Scaling task set breadth (domain coverage) for better generalization\""
+      },
+      {
+        "text": "Scaling the candidate task set size by sampling more easy tasks (which are more diverse) avoids overfitting to narrow hard tasks when using filtered behavior cloning loss.",
+        "key_result": "Training exclusively on easy tasks (\"only easy\") consistently outperformed \"only medium\" on overall success and on easy/medium test tasks, and did not exhibit the late-stage plateauing or performance regression observed when harder tasks were upweighted (e.g., \"biased to hard\" after ~36k trajectories). The \"only easy\" setting achieved 36.9% success rate compared to 34.5% for \"biased to hard\", demonstrating that the large set of easy tasks spanning many websites and domains supports generalization and mitigates overfitting.",
+        "citation": "Section 5.3, \"Scaling candidate task set size by sampling more easy tasks avoids overfitting to narrow hard tasks with the filtered BC loss\""
+      },
+      {
+        "text": "Scaling candidate task set depth (wider range of difficulty levels) by including tasks from all difficulty levels promotes more efficient learning, particularly on medium-difficulty tasks.",
+        "key_result": "Uniform sampling from the full training set yielded the highest overall performance (38.2%) among the four difficulty-mixing strategies evaluated, and achieved a significantly higher success rate on the medium-difficulty test set compared to training on easy tasks alone (36.9%). The additional gains from uniform sampling over \"only easy\" are attributed to the inclusion of medium- and hard-difficulty tasks, which provide training signals enabling the agent to develop capabilities beyond easy interactions.",
+        "citation": "Section 5.3, \"Scaling candidate task set depth (wider range of difficulty levels) by including tasks from all difficulty levels to promote more efficient learning\""
+      },
+      {
+        "text": "Shortening the train-time interaction horizon (step budget) acts as a regularizer that improves both sample efficiency and final performance by concentrating training signal on earlier, higher-impact decisions.",
+        "key_result": "Reducing the per-episode step limit from (15, 30, 45) to (10, 20, 30) improved both sample efficiency and final performance across all difficulty slices. The success rate increased from a peak of 38.2% (uniform sampling with step budget of (15, 30, 45)) to a peak of 42.9%. Performance on hard tasks also improved substantially, consistent with the model learning more robust and reusable interaction primitives that transfer beyond the capped training horizon.",
+        "citation": "Section 5.3, \"Horizon: controlling train-time interaction budget\""
+      },
+      {
+        "text": "An explicit memory mechanism is essential for enabling agents to retain and reuse information gathered in earlier steps for long-horizon tasks.",
+        "key_result": "Utilizing the memory prompt (where the model maintains and updates memory by responding with updated memory in each step) significantly boosted performance after RL training. The agent with memory prompt achieved 34.5% success rate compared to 31.5% without the memory prompt (\"w/o Memory Prompt\"), as shown in the ablation results.",
+        "citation": "Section 5.2, \"Memory prompt for long-horizon tasks\" and Table in Appendix A (raw results)"
+      },
+      {
+        "text": "Applying a penalty for repeated ineffective actions improves sample efficiency during RL training by reducing the frequency of agents getting stuck repeating the same action.",
+        "key_result": "Applying the repetition penalty (filtering out steps where the next screenshot is identical to the current one) made RL runs substantially more sample efficient. The agent with repetition penalty achieved 34.5% success rate compared to 33.0% without it (\"w/o Repetition Penalty\"). The penalty also reduced the \"same screenshot\" rate and improved trajectory efficiency as shown in Figure 3 (right panel).",
+        "citation": "Section 5.2, \"Removing repeated actions with a reward penalty\" and Table in Appendix A (raw results)"
+      },
+      {
+        "text": "Rubric-based evaluation (with explicit task-specific criteria) improves agreement with human judgment compared to task-only evaluation.",
+        "key_result": "Rubric-guided evaluation improved agreement over task-only judging, increasing accuracy and precision for all evaluator models tested (GPT-4o, Qwen3-VL-8B-Instruct, and Gemma3-27B-it). For example, GPT-4o showed the largest improvement: precision increased from approximately 0.70 to 0.85 when using rubrics, though recall dropped slightly from approximately 0.85 to 0.75.",
+        "citation": "Section 3.5, \"Evaluator and Reward Function Design\" and Figure 2"
+      },
+      {
+        "text": "The asynchronous rollout system in WebGym achieves 4-5\u00d7 speedup compared to synchronous rollout frameworks by eliminating burst-idle behavior and keeping both CPUs and GPUs fully utilized.",
+        "key_result": "Using only 64 CPUs, the asynchronous system collected 1.8k rollouts (with average 13.2 steps, totaling 23,760 steps) in 48.6 minutes, whereas the synchronous system required 264 minutes\u2014demonstrating a 5.4\u00d7 speedup. The speedup was 4-5\u00d7 across different CPU configurations, with greater gains under tighter CPU constraints.",
+        "citation": "Section 4.2, \"Benchmarking our Rollout System\" and Figure 4 (left panel)"
+      }
+    ],
+    "rephrased_option_1": "Develop evaluation methods that treat automatically generated assessment criteria as soft guidance by training evaluators that jointly condition on both the criteria and task descriptions, rather than applying them as strict binary rules.",
+    "rephrased_option_2": "Incorporate human feedback mechanisms to refine automatically generated evaluation criteria through review, template reuse, and failure-mode-specific guidance."
+  },
+  {
+    "base_id": "2601.05175_fw3_d1",
+    "paper_id": "2601.05175",
+    "research_goal": "The overarching research goal of this paper is to develop an efficient and adaptive video understanding framework that selectively applies chain-of-thought reasoning only when necessary, rather than unconditionally for all inputs. Specifically, the authors aim to create a system that can automatically determine when explicit step-by-step reasoning provides genuine benefits for video understanding tasks versus when direct answering is sufficient, thereby achieving both high accuracy on challenging reasoning-intensive problems and improved computational efficiency on perception-oriented tasks.",
+    "current_progress": [
+      {
+        "text": "For RL-trained video models, direct answering often matches or even surpasses CoT performance, despite CoT producing step-by-step analyses at a higher computational cost.",
+        "key_result": "Analysis of existing video reasoning models (Video-R1, Time-R1, VideoChat-R1) showed that direct inference often matches or outperforms CoT inference on perception-oriented benchmarks like VideoMME and LongVideoBench, while generating significantly fewer tokens (e.g., 17.6 vs 386 tokens for Video-R1). Consistent CoT gains were primarily observed only on reasoning-intensive benchmarks like VideoMMMU.",
+        "citation": "Section 3.2 (Preliminaries - Analysis of Existing Video Reasoning Models), Table 1"
+      },
+      {
+        "text": "A \"thinking once, answering twice\" training paradigm that supervises both initial and reviewed answers eliminates the need for per-sample think/no-think labels and yields more stable training than traditional mode-switching approaches.",
+        "key_result": "The proposed dual-answer training approach achieved superior performance compared to training-based mode-switching strategies (inspired by AdaptThink). VideoAuto-R1 consistently outperformed the training-based variant across benchmarks (e.g., 58.6% vs 55.7% on VideoMMMU) and avoided mode collapse issues, while the training-based approach showed unstable think ratios (e.g., only 1% on VideoMME, 31% on VideoMMMU).",
+        "citation": "Section 4.1 (Method - Thinking Once, Answering Twice), Section 5.3 (Experiments - Comparison with Other Adaptive Reasoning Strategies), Table 7"
+      },
+      {
+        "text": "A confidence-based early-exit mechanism using length-normalized mean log probability of the initial answer can effectively determine when to invoke CoT reasoning, with the confidence score correlating with mode-switch accuracy.",
+        "key_result": "The confidence score of the initial answer strongly correlated with task difficulty: perception-oriented benchmarks showed high average confidence (>93% on MVBench and MMVU) with low think ratios (~25-39%), while reasoning-intensive VideoMMMU showed lower confidence (87%) with higher think ratio (51%). The mechanism achieved 94-100% recall on \"think-needed\" samples where the initial answer was wrong but the reviewed answer was correct.",
+        "citation": "Section 4.3 (Method - Inference: Confidence-Based Early Exit), Section 5.3 (Experiments - Analysis of Confidence-Based Early Exit Mechanism), Table 8"
+      },
+      {
+        "text": "VideoAuto-R1 achieves state-of-the-art accuracy with significantly improved efficiency by reasoning only when necessary, reducing average response length while maintaining or improving performance.",
+        "key_result": "VideoAuto-R1 achieved state-of-the-art results across benchmarks while reducing average response length from ~149 tokens (RL with thinking baseline) to 44 tokens. On VideoMMMU, it improved accuracy from 54.7% to 58.6% (+3.9%) compared to the Qwen2.5-VL baseline, and on VideoMME from 66.0% to 67.3% (+1.3%). The model adaptively activated thinking mode based on task complexity: 25% on perception-oriented MVBench vs 51% on reasoning-heavy VideoMMMU.",
+        "citation": "Section 5.2 (Experiments - Main Results), Tables 2-4, Abstract"
+      },
+      {
+        "text": "Assigning higher weight to the reviewed answer (w\u2082 > w\u2081) in the dual-answer reward and including a fallback tolerance mechanism improves model performance compared to equal weighting.",
+        "key_result": "Asymmetric reward weighting (0.9:1.1 for w\u2081:w\u2082) with fallback bonus (\u03b1=0.3) achieved the best performance across benchmarks: 67.3% on VideoMME, 58.6% on VideoMMMU, and 60.0 mIoU on Charades-STA. This outperformed equal weighting (1:1) which achieved 66.1%, 56.1%, and 58.3% respectively. The fallback reward consistently improved results across all tested weight ratios.",
+        "citation": "Section 5.3 (Experiments - Ablation Study of Dual-Answer Reward Design), Table 9, Appendix Section on Reward Analysis"
+      },
+      {
+        "text": "Direct RL training without cold-start SFT on chain-of-thought data is more effective than SFT followed by RL for video reasoning tasks.",
+        "key_result": "Direct RL training achieved 66.1% on VideoMME, 71.2% on MVBench, and 56.4% on VideoMMMU. In contrast, SFT on Video-R1-CoT data degraded the baseline (60.1%, 64.0%, 53.8% respectively), and SFT\u2192RL performed worse than direct RL (61.7%, 64.3%, 53.5%). This demonstrated that low-quality CoT supervision can distort strong base models and create poor initialization for RL.",
+        "citation": "Appendix Section A.5 (Analysis of the Impact of Cold-Start SFT), Table 12"
+      }
+    ],
+    "rephrased_option_1": "Develop large-scale video datasets that explicitly require complex reasoning capabilities such as multi-step causal inference, temporal logic problems, or physically grounded scenarios.",
+    "rephrased_option_2": "Validate the findings by conducting experiments across diverse model architectures, sampling strategies, scale variations, and training paradigms."
+  },
+  {
+    "base_id": "2601.09680_fw3_d0",
+    "paper_id": "2601.09680",
+    "research_goal": "To develop and validate an autonomous, minimally supervised agentic AI framework that can detect supply chain disruptions from unstructured sources, map them to extended multi-tier supplier networks, assess cascading risks, and generate actionable mitigation strategies\u2014thereby enabling organizations to shift from reactive recovery to proactive disruption management across deep-tier supply chains where most disruptions originate but visibility is typically absent.",
+    "current_progress": [
+      {
+        "text": "Agentic AI, defined as agents driven by large language models (LLMs) that plan, use tools, and coordinate via language, can autonomously perform end-to-end supply chain disruption monitoring by detecting disruptions from unstructured sources, mapping them to extended supplier networks across multiple tiers, tracing propagation paths toward Tier-1, quantifying risk based on network structure, and deriving actionable decisions.",
+        "key_result": "The framework achieves high accuracy across core tasks with F1 scores between 0.962 and 0.991 across four agents (Disruption Monitoring: 0.991\u00b10.028, KG Query: 0.980\u00b10.110, Risk Manager: 0.962\u00b10.196, CSCO: 0.899\u00b10.277), and performs full end-to-end analyses in a mean of 3.83 minutes at a cost of $0.0836 per disruption across 30 synthesized scenarios. This represents a reduction of more than three orders of magnitude in response time compared to industry benchmarks of multi-day, analyst-driven assessments (five days on average).",
+        "citation": "Section 4 (Experimental Evaluation), specifically Section 4.3 (Results and Discussion) and Table 1 (Overall Performance Metrics)"
+      },
+      {
+        "text": "A minimally supervised agentic framework combining LLM-powered agents with deterministic graph tools and structured communication protocols can address the fundamental gap in supply chain disruption monitoring: transforming unstructured disruption signals (news articles, regulatory filings) into mapped network knowledge and actionable intelligence across extended multi-tier supplier networks where over one-third of disruptions originate beyond Tier-1 suppliers.",
+        "key_result": "The framework successfully processes unstructured news articles to identify disrupted supply chain paths across all four tiers (Tier-1 through Tier-4) with perfect precision (1.000\u00b10.000) for the Knowledge Graph Query Agent and high recall (0.975\u00b10.137). The real-world case study of the 2022 Russia-Ukraine conflict demonstrates operational applicability, identifying critical dependencies (e.g., Johnson Matthey PLC's dependence on MMC Norilsk Nickel PJSC for palladium) that exist at Tier-2 but affect Tier-1 suppliers, enabling proactive mitigation before disruptions cascade.",
+        "citation": "Section 4.3 (Results and Discussion), specifically subsections 4.3.1 (Disruption Monitoring Agent) and 4.3.2 (Knowledge Graph Query Agent); Section 5 (Case Study: Russia-Ukraine War), specifically subsections 5.1-5.2"
+      },
+      {
+        "text": "Grounding critical computations in deterministic tools while using LLM orchestration for reasoning and tool selection creates a hybrid architecture that ensures reliability and reproducibility for supply chain risk assessment while maintaining flexibility to handle diverse disruption scenarios.",
+        "key_result": "The Risk Manager Agent achieves perfect precision (1.000\u00b10.000) through orchestration of deterministic risk calculation tools that aggregate four risk dimensions (exposure depth, exposure breadth, downstream criticality, network centrality) using fixed mathematical formulas. The Knowledge Graph Query Agent similarly achieves perfect precision (1.000\u00b10.000) through deterministic Neo4j Cypher queries. Error analysis reveals that when upstream agents provide correct inputs, downstream agents achieve high performance, demonstrating that the architecture successfully isolates errors to the initial extraction stage and prevents error amplification through deterministic tool grounding.",
+        "citation": "Section 4.3 (Results and Discussion), specifically subsections 4.3.2 (Knowledge Graph Query Agent), 4.3.3 (Risk Manager Agent), and 4.3.5 (Error Propagation and Framework Robustness)"
+      },
+      {
+        "text": "The framework can generate executive-level strategic decisions and qualitative analysis that supports decision-making with clear reasoning, providing comprehensive, accurate, and actionable supply chain intelligence beyond quantitative risk scores.",
+        "key_result": "The CSCO Agent achieves strong quantitative performance (F1: 0.899\u00b10.277, Precision: 0.950\u00b10.201) in addressing the top 10 riskiest suppliers with appropriate actions. Qualitative evaluation using a rubric-based methodology shows weighted mean scores of 0.811\u00b10.049 for disruption summary, 0.486\u00b10.172 for network impact analysis, and 0.830\u00b10.078 for replacement recommendations, with particularly high actionability (0.910\u00b10.111), indicating the agent provides clear, actionable guidance aligned with risk assessments. The overall qualitative score of 0.709\u00b10.099 demonstrates executive-level communication quality.",
+        "citation": "Section 4.3.4 (CSCO Agent: Strategic Decision-Making) and Section 4.3.4.1 (Qualitative Evaluation of CSCO Agent), including Table 4 (Qualitative Evaluation Results)"
+      }
+    ],
+    "rephrased_option_1": "Enhance entity extraction robustness through ensemble methods or confidence-based filtering approaches.",
+    "rephrased_option_2": "Explore integrating agentic reinforcement learning to jointly optimize the tool-use policy."
+  },
+  {
+    "base_id": "2601.14525_fw0_d1",
+    "paper_id": "2601.14525",
+    "research_goal": "To develop and evaluate an automated system that can generate, implement, and execute research ideas for open-ended AI research problems, and to investigate whether large language models can learn to generate more effective ideas by grounding their ideation process in execution feedback through evolutionary search and reinforcement learning.",
+    "current_progress": [
+      {
+        "text": "Frontier LLMs can generate ideas that outperform provided baselines through best-of-N sampling, and a large fraction of LLM-generated ideas can be successfully executed automatically on open-ended AI research problems.",
+        "key_result": "Benchmarking experiments showed that frontier LLMs achieved high execution rates (over 90% for Claude-4.5-Opus and Claude-4.5-Sonnet on nanoGPT with self-execution), and best-of-N performance (N=50) beat baseline solutions. For example, Claude-4.5-Sonnet achieved 60.4% max accuracy vs 48.0% baseline on GRPO; Claude-4.5-Opus achieved 3.237 min loss vs 3.255 baseline on nanoGPT.",
+        "citation": "Section 3: Benchmarking LLM Ideators and Executors; Figure 2"
+      },
+      {
+        "text": "Execution-guided evolutionary search can find research ideas that significantly outperform baseline solutions on realistic LLM research problems (pre-training and post-training) within a limited number of search epochs.",
+        "key_result": "Within 10 search epochs, execution-guided search found a post-training recipe achieving 69.4% vs 48.0% baseline on GRPO, and a pre-training recipe achieving 19.7 minutes vs 35.9 minutes baseline on nanoGPT to reach target validation loss. The post-training result outperformed the best human expert solution (68.8%) from the Stanford CS336 class leaderboard.",
+        "citation": "Section 4: Execution-Guided Evolutionary Search; Table 1; Figure 3"
+      },
+      {
+        "text": "Execution-guided evolutionary search is more sample-efficient than best-of-N sampling under the same sampling budget.",
+        "key_result": "Comparison on nanoGPT environment with GPT-5 showed that evolutionary search significantly outperformed best-of-N from epoch 1 onward under the same sampling budget (N=80 ideas per epoch), demonstrating that the model effectively leverages trajectories from previous epochs to generate more effective ideas.",
+        "citation": "Section 4.3: Comparison with Best-of-N; Figure 4"
+      },
+      {
+        "text": "LLMs generate substantial amounts of algorithmic ideas (beyond hyperparameter tuning) during execution-guided search, and algorithmic ideas achieve higher upper-bound performance than hyperparameter ideas in most cases.",
+        "key_result": "Quantitative analysis showed all three models (Claude-4.5-Opus, Claude-4.5-Sonnet, GPT-5) generated substantial algorithmic ideas: 96.3%, 58.9%, and 95.0% respectively on GRPO; 91.3%, 68.7%, and 84.6% on nanoGPT. Algorithmic ideas achieved the best performance for all models except Claude-4.5-Sonnet.",
+        "citation": "Section 4.4: Analysis of Generated Ideas; Table 2"
+      },
+      {
+        "text": "Reinforcement learning from execution reward can improve the average reward of ideator models on open-ended AI research problems.",
+        "key_result": "RL training with GRPO on Qwen3-30B successfully improved average reward: on GRPO environment, average accuracy increased from 0.253 to 0.343 after 40 epochs; on nanoGPT environment, average reward increased from 0.194 to 0.246 after 68 epochs (corresponding to average validation loss decreasing from 5.150 to 4.066).",
+        "citation": "Section 5: Reinforcement Learning from Execution Reward; Section 5.2: Experiment Results; Figure 5 (upper row)"
+      },
+      {
+        "text": "Reinforcement learning from execution reward improves the maximum reward (upper-bound performance) of ideator models on open-ended AI research problems.",
+        "key_result": "This hypothesis was invalidated. The max reward fluctuated throughout RL training without a clear upward trend on both GRPO and nanoGPT environments, revealing a crucial limitation of the standard GRPO algorithm for improving idea generation where upper-bound performance matters more than average quality.",
+        "citation": "Section 5.2: Experiment Results, paragraph \"The Case of Max Reward\"; Figure 5 (lower row)"
+      },
+      {
+        "text": "RL from execution reward causes models to converge on simple, easy-to-implement ideas, leading to diversity collapse and shrinking thinking lengths.",
+        "key_result": "Analysis confirmed this hypothesis: (1) Thinking trace lengths rapidly decreased during RL training while idea lengths stayed constant; (2) Ideas with longer thinking had consistently lower execution rates; (3) Severe diversity collapse occurred - in nanoGPT, 119 out of 128 sampled ideas at epoch 68 were one of two common simple ideas (replacing RMSNorm with LayerNorm or performing EMA), compared to 51 out of 128 at epoch 0.",
+        "citation": "Section 5.3: Analysis of Training Dynamics; Figures 6 and 7"
+      }
+    ],
+    "rephrased_option_1": "Improve the execution agent to enable correct implementation of more complex idea types, such as those requiring additional model training or system-level optimizations.",
+    "rephrased_option_2": "Investigate designed verification tasks, more principled integration of verification and generation objectives, and more efficient training strategies to further leverage verification's potential to improve generation."
+  },
+  {
+    "base_id": "2601.18207_fw4_d0",
+    "paper_id": "2601.18207",
+    "research_goal": "To develop and demonstrate an environment for training reinforcement learning-based search agents to answer scientific questions by searching and reasoning over biomedical research papers, including creating the necessary datasets, retrieval corpus, and benchmarks to enable this capability.",
+    "current_progress": [
+      {
+        "text": "RLVR training of search agents leads to stronger performance on scientific paper question-answering compared to non-RL baselines including direct LLM inference, chain-of-thought prompting, retrieval augmented generation (RAG), Search-o1, and PaperQA2.",
+        "key_result": "RLVR training (Search-R1) achieved the strongest results across all baselines. For 3B models, RL improved over RAG by 9.6 and 5.5 points for PaperSearchQA and BioASQ respectively. For 7B models, the difference was 14.5 and 9.3 points. On PaperSearchQA, Search-R1 achieved 41.6% (3B) and 51.0% (7B) accuracy compared to RAG's 32.0% (3B) and 36.5% (7B).",
+        "citation": "Section 4 (Results), specifically Section 4.2 (Quantitative Results) and Table 1"
+      },
+      {
+        "text": "Factoid question-answer pairs with verifiable answers can serve as effective training data for reinforcement learning with verifiable rewards (RLVR) methods for scientific literature search agents.",
+        "key_result": "The automatically generated PaperSearchQA dataset with 54,907 training samples of factoid QAs successfully enabled RLVR training that outperformed all baseline methods. The dataset's design with unambiguous factoid answers allowed for simple exact-match reward computation (binary 0/1), which proved sufficient for effective RL training as demonstrated by the 9.6-14.5 point improvements over RAG baselines.",
+        "citation": "Section 3.1 (Dataset Construction) and Section 4.2 (Quantitative Results)"
+      },
+      {
+        "text": "Search agents trained with RLVR on scientific papers will exhibit emergent behaviors including explicit planning about query rewriting, reasoning about questions before retrieval, and verification when the model already has an initial answer.",
+        "key_result": "Manual review of reasoning traces revealed three prevalent patterns: (1) explicit planning and keyword extraction was very common in later training, where models extracted keywords and combined them into search queries; (2) reasoning before search, where LLMs reasoned about questions using parametric knowledge before performing search; (3) verification of in-parameter knowledge, where models performed search to verify initial answers they already knew. The study notes that \"behavior 1 becomes much more common\" with more training.",
+        "citation": "Section 4.3 (Qualitative Results) and Figure 3"
+      },
+      {
+        "text": "Paraphrasing questions during dataset construction to avoid exact keyword matching from source documents increases dataset difficulty and is beneficial for training robust search agents.",
+        "key_result": "For Search-R1 trained on PaperSearchQA, non-paraphrased questions scored 57.2% while paraphrased questions scored 44.9%, demonstrating a 12.3 point difference. This highlights the importance of paraphrasing for sustaining question difficulty and preventing agents from relying on simple keyword matching.",
+        "citation": "Section 4.2 (Quantitative Results), subsection \"Paraphrasing in data construction is beneficial\""
+      }
+    ],
+    "rephrased_option_1": "Equip agents with tools and metadata that real scientists use in their work, such as citation traversal capabilities and source reliability metrics.",
+    "rephrased_option_2": "Incorporate human-in-the-loop capabilities that enable subject-matter experts to approve, revise, or redirect agent decisions to increase system reliability and alignment with real-world scientific practices."
+  },
+  {
+    "base_id": "2601.21468_fw0_d1",
+    "paper_id": "2601.21468",
+    "research_goal": "To develop a memory management system for long-horizon agentic reasoning that achieves adaptive information density through visual layout, enabling more efficient utilization of limited context budgets by decoupling semantic content from token cost.",
+    "current_progress": [
+      {
+        "text": "Visual memory with adaptive information density improves long-horizon reasoning under tight context budgets compared to textual memory paradigms.",
+        "key_result": "MemOCR outperforms text-based baselines across all settings, achieving 74.6% average accuracy vs. 67.8% for the strongest baseline (MemAgent) at 1024 tokens on 10K context. Under extreme budgets (16 tokens), MemOCR maintains 62.2% accuracy while MemAgent drops to 31.6%, representing a 30.6 percentage point improvement and approximately 8\u00d7 improvement in effective context utilization.",
+        "citation": "Section 4.2 (Overall Performance - RQ1), Table 1"
+      },
+      {
+        "text": "Visual layout control enhances robustness under tight memory budgets by enabling non-uniform budget allocation.",
+        "key_result": "Removing visual layout from MemOCR causes marked performance degradation, especially at low budgets. At 16 tokens, MemOCR achieves comparable accuracy to textual baselines at 64 tokens, demonstrating an 8\u00d7 token-efficiency gain. The ablation \"MemOCR w/o Visual Layout\" shows substantially larger performance drops as budgets tighten, confirming that robustness comes primarily from layout-guided allocation rather than the visual modality alone.",
+        "citation": "Section 4.3 (Analysis on Visual Robustness - RQ2), Figure 3"
+      },
+      {
+        "text": "Different layout regions exhibit asymmetric compression-robustness, and MemOCR exploits this by placing important evidence in more visually accessible regions.",
+        "key_result": "Oracle experiments show that injecting ground-truth evidence into the crucial region (H1 headers) consistently outperforms injection into the detailed region (plain body text), with advantages growing as budgets tighten. Training analysis reveals MemOCR shifts evidence density: crucial region precision increases ~1.8\u00d7 while detailed region precision decreases ~0.46\u00d7, while the crucial region remains orders of magnitude shorter, demonstrating adaptive information density.",
+        "citation": "Section 4.4 (Mechanism Verification - RQ3), Figures 4 and 5"
+      },
+      {
+        "text": "Budget-aware training objectives with multiple complementary tasks are necessary for learning robust layout-based memory allocation.",
+        "key_result": "Progressive ablation shows cumulative robustness gains: removing all training objectives yields 37.5% average accuracy at 16 tokens (10K context); using only standard QA (T_std) achieves 32.9%; adding detail-oriented questions (T_augQ) improves to 41.2%; the full model with compressed memory training (T_augM) reaches 62.2%. The low-budget performance drop increases from 16.6% (full model) to 47.1% (T_std only), confirming that multiple training signals are essential for budget-robust behavior.",
+        "citation": "Section 4.5 (Ablation Study over Training Objectives - RQ4), Table 2"
+      }
+    ],
+    "rephrased_option_1": "Extend the visual memory approach to additional long-horizon agent tasks beyond question answering, such as planning and tool-augmented reasoning, and investigate its long-term stability under continuous lifelong updates.",
+    "rephrased_option_2": "Investigate question-answering tasks that require multi-hop reasoning, list-based answers, and extended or summarized responses, which necessitate more complex agent planning behaviors and fuzzy reward models."
+  },
+  {
+    "base_id": "2601.22930_fw0_d1",
+    "paper_id": "2601.22930",
+    "research_goal": "To develop a comprehensive multi-turn interactive reinforcement learning framework for autonomous driving trajectory planning that enables vision-language models to iteratively refine trajectories based on environmental feedback, addressing the limitations of single-turn reasoning in complex driving scenarios while achieving efficient training through system-level optimizations.",
+    "current_progress": [
+      {
+        "text": "Multi-turn interactive reasoning can improve trajectory planning quality in autonomous driving by enabling iterative refinement based on environmental feedback, overcoming the limitations of single-turn reasoning in handling complex scenarios.",
+        "key_result": "MTDrive with multi-turn reasoning achieves a PDMS of 96.2 (with GT oracle) and 91.1 (with kinematic model), surpassing the human driving benchmark of 94.8 and significantly outperforming the single-turn baseline (83.7). Even with SFT training alone, multi-turn reasoning improves performance by 4.4 points (88.1 vs 83.7) compared to single-turn baseline, demonstrating the strong capability of the multi-turn reasoning paradigm.",
+        "citation": "Section 4.2 Main Results, Table 1"
+      },
+      {
+        "text": "Multi-Turn Group Relative Policy Optimization (mtGRPO), which computes turn-level advantages to address sparse reward problems, is more effective than standard GRPO with sequence-level rewards for multi-turn trajectory refinement tasks.",
+        "key_result": "mtGRPO with cross-turn normalization achieves a PDMS of 96.2, outperforming GRPO with sequence-level reward (94.2) by 2.0 points and mtGRPO with intra-group normalization (95.2) by 1.0 point. This validates that turn-level advantage calculation effectively addresses the credit assignment problem in multi-turn settings.",
+        "citation": "Section 4.3 Ablation Study, Table 3"
+      },
+      {
+        "text": "Single-stage training with combined single-turn and multi-turn data is more effective than two-stage training (first single-turn, then multi-turn) for developing multi-turn reasoning capabilities in autonomous driving models.",
+        "key_result": "Single-stage training with 80,000 single-turn and 50,000 2-turn samples achieves a PDMS of 87.3, improving by 2.4 points over two-stage training (84.9) and by 3.6 points over the single-turn baseline (83.7). Adding PDM understanding data and extending to 6 turns further improves performance to 88.1.",
+        "citation": "Section 4.3 Ablation Study, Table 2"
+      },
+      {
+        "text": "System-level optimizations (Inter-Process Streaming Serialization and Intra-Process Tensor Cache) can significantly reduce data transfer overhead in multimodal multi-turn RL training caused by high-resolution images and multi-turn sequences.",
+        "key_result": "The combined optimizations (IPSS and IPTC) reduce per-step training time from approximately 1250s to approximately 490s, achieving a 2.5\u00d7 speedup. IPSS contributes approximately 1.5\u00d7 speedup and IPTC contributes an additional approximately 1.7\u00d7 speedup.",
+        "citation": "Section 3.4 Multimodal Multi-turn RL Training System"
+      }
+    ],
+    "rephrased_option_1": "Integrate perception data into the vision-language model to enable self-generated feedback based on the model's own reasoning and enhance environmental understanding.",
+    "rephrased_option_2": "Investigate methods to reduce the number of rollouts required for learning to increase the accessibility of the approach."
+  },
+  {
+    "base_id": "2602.03955_fw2_d0",
+    "paper_id": "2602.03955",
+    "research_goal": "To develop a comprehensive framework for distilling the collective reasoning capabilities of multi-agent systems into a single language model, thereby achieving the reasoning performance benefits of multi-agent collaboration while eliminating the computational overhead and vulnerabilities associated with inference-time multi-agent coordination.",
+    "current_progress": [
+      {
+        "text": "A single model can internalize the reasoning benefits of multi-agent systems without their high inference-time cost and collaborative vulnerabilities through structured distillation.",
+        "key_result": "AgentArk significantly improves the performance of a single agent by 4.8% on average across benchmarks and achieves performance only slightly worse than vanilla multi-agent systems, while requiring only a single forward pass at inference time. The distilled models preserve the efficiency of one agent while exhibiting strong reasoning and self-correction performance of multiple agents.",
+        "citation": "Section 1 (Introduction), Section 4.2 (Main Results)"
+      },
+      {
+        "text": "Process-Aware Distillation (PAD) using process reward models provides more effective and stable distillation than reasoning-enhanced supervised fine-tuning (RSFT) or data augmentation (DA) alone.",
+        "key_result": "PAD consistently yields performance improvements across all datasets and settings, while RSFT and DA show inconsistent gains that fluctuate by dataset. PAD achieves the highest scores across all reasoning quality dimensions including step decomposition, intermediate verification, error localization, and overall reasoning coherence. PAD demonstrates significantly more stable behavior across data scales, avoiding the sharp fluctuations observed with raw data scaling.",
+        "citation": "Section 4.2 (Main Results), Section 4.4 (Analysis of the Reasoning Quality), Section 4.3 (Scaling and Data Dynamics)"
+      },
+      {
+        "text": "PRM capacity matters more than student model size for effective distillation, while student capacity bounds the gains from multi-agent distillation.",
+        "key_result": "High-capacity PRMs enable strong improvements even for small students (e.g., 0.6B), whereas weak PRMs limit gains. For smaller students like Qwen3-0.6B, scaling beyond 5 agents does not yield additional benefits and can lead to performance degradation due to limited representational capacity. In contrast, larger students like Qwen3-8B benefit modestly from scaling to 10 and 20 agents, though with diminishing returns.",
+        "citation": "Section 4.3 (Scaling and Data Dynamics), Appendix C.1 (PRM Modeling and Policy Separation)"
+      },
+      {
+        "text": "Reasoning quality outweighs quantity: simply adding more reasoning trajectories does not improve performance, while high-signal process supervision yields stable gains.",
+        "key_result": "Across datasets, increasing training data does not lead to monotonic improvements. For both RSFT and DA, performance exhibits high variance as data scale grows, with moderate data sizes yielding gains while further scaling often leads to stagnation or degradation. In contrast, PAD demonstrates significantly more stable behavior across data scales and consistently achieves competitive performance.",
+        "citation": "Section 4.3 (Scaling and Data Dynamics)"
+      },
+      {
+        "text": "Process-aware distillation improves reasoning behavior and internal consistency, not just accuracy.",
+        "key_result": "All distilled models achieve substantially lower reasoning perplexity than single-agent models, indicating improved predictability and coherence of reasoning steps. PAD achieves the highest scores across all reasoning quality dimensions: step decomposition (3.23 vs 2.75 baseline), intermediate verification (4.07 vs 2.41), error localization (2.78 vs 1.97), and reasoning coherence (3.96 vs 1.88). Case studies demonstrate that distilled models acquire multi-agent reasoning patterns with more structured, logically coherent, and self-consistent reasoning.",
+        "citation": "Section 4.4 (Analysis of the Reasoning Quality)"
+      },
+      {
+        "text": "AgentArk improves generalization and robustness to out-of-domain tasks and distribution shifts.",
+        "key_result": "On out-of-domain datasets (HotpotQA, QASPER, QMSum), AgentArk significantly enhances cross-dataset reasoning transfer, particularly for larger models. For example, Qwen3-8B improves F1-Score from 14.94 to 17.82 on QMSum. On the robustness benchmark TruthfulQA, all distillation methods improve performance over the base model, with PAD achieving the highest scores across all metrics (BLEU: 0.6634 vs 0.6034 baseline), indicating resilience to catastrophic forgetting and better retention of factual correctness.",
+        "citation": "Section 4.5 (Robustness and Generalization), Appendix D.1 (Generalization on Out-of-Domain Datasets)"
+      },
+      {
+        "text": "Multi-agent distillation strategies transfer effectively across different model families and to multimodal LLMs.",
+        "key_result": "Cross-family distillation (e.g., from Qwen to Gemma or LLaMA) yields larger and more consistent performance gains than same-family distillation, particularly for Gemma-7B and LLaMA-3-8B. For multimodal LLMs, distilling from Qwen2.5-VL-32B-Instruct to Qwen2.5-VL-3B-Instruct using text-only reasoning datasets still improves performance, with PAD consistently achieving the strongest results, indicating that distillation captures model-agnostic reasoning patterns transferable beyond the training modality.",
+        "citation": "Section 4.2 (Main Results - Performance across Student Models), Section 4.6 (Distillation of Multimodal LLMs)"
+      }
+    ],
+    "rephrased_option_1": "Investigate adaptive ensemble scaling or selective trajectory sampling methods that optimize the trade-off between diversity and learnability in the distillation process.",
+    "rephrased_option_2": "Develop efficient, predictive metrics for assessing data quality that do not require significant computational or resource overhead."
+  },
+  {
+    "base_id": "2601.13232_fw0_d1",
+    "paper_id": "2601.13232",
+    "research_goal": "The overarching research goal is to develop and validate a comprehensive, GPU-accelerated digital twin simulation framework for chemistry laboratories that enables the design, testing, and deployment of autonomous robotic workflows for accelerated materials discovery, thereby reducing reliance on costly real-world experimentation while facilitating sim-to-real transfer of complex, multi-step chemistry experiments.",
+    "current_progress": [
+      {
+        "text": "Digital twin simulation frameworks can effectively model multi-scale chemistry experiments by integrating physics-based simulation (robotic manipulation, particle dynamics) with a semantics engine (chemical kinetics, heat transfer, device functionalities) to enable workflow development and verification before real-world deployment.",
+        "key_result": "The framework successfully simulated two multi-scale chemistry workflows: (1) an organic chemistry experiment (S_N1 reaction between ethanol and hydroiodic acid) demonstrating integration of robotic manipulation, heat transfer, and chemical kinetics, producing EtI at 1.08 mol/kg concentration after 2000 seconds; (2) a two-step reduction-oxidation experiment involving multiple solutions and reactions. The semantics engine added only 2.97% and 3.42% GPU overhead for 2048 and 4096 parallel environments respectively, demonstrating computational efficiency.",
+        "citation": "Results section, subsection \"Simulation of Multi-Scale Chemistry Workflows\" and Figure 5"
+      },
+      {
+        "text": "Workflows developed and validated in the digital twin simulation can be successfully transferred to real-world laboratory setups (sim-to-real transfer) for autonomous chemistry experiments involving general-purpose robots and automated platforms.",
+        "key_result": "Three real-world deployment experiments demonstrated successful sim-to-real transfer: (1) Object pick-and-place achieved 75% success rate across 12 trials with a beaker; (2) Liquid pouring achieved 90% success rate across 10 experiments, with poured volumes of 59.6 \u00b1 7.9 mL (real) vs 61.3 \u00b1 4.4 mL (simulation); (3) A long-horizon liquid handling station setup with FR3 robot and OT-2 liquid handler executed successfully using policies developed entirely in simulation and transferred zero-shot to the real system.",
+        "citation": "Results section, subsection \"Deployment to Real Laboratory Environments\" and Figure 6"
+      },
+      {
+        "text": "A modular GPU-accelerated semantics engine can simulate behaviors not natively supported by physics engines (chemical reactions, heat transfer, device functionalities) while maintaining computational efficiency suitable for parallel reinforcement learning.",
+        "key_result": "The semantics engine successfully simulated: (1) heat transfer between heater, beaker, and solution with temperature-dependent reaction kinetics; (2) device functionalities including OT-2 liquid handler tip loading/removal and liquid aspiration/dispensing; (3) chemical reaction kinetics with temperature-dependent rate constants using the Arrhenius equation. Performance testing showed GPU overhead of only 2.97-3.42% when adding heat transfer semantics to environments with 2048-4096 parallel instances, enabling efficient RL training.",
+        "citation": "Results section, subsection \"Integrated Physics and Semantics Engine\" and Figure 4; Methods section, subsection \"Multi-Scale simulation: Integrated Physics and Semantics Engine\""
+      },
+      {
+        "text": "Combining hierarchical state machines with a library of reusable skills (based on classical motion planning, reinforcement learning, and imitation learning) enables flexible workflow design for complex, multi-step chemistry experiments without requiring hard-coded trajectories.",
+        "key_result": "The hierarchical state machine approach successfully enabled: (1) creation of abstract reusable skills like Pick&Place(obj1, obj2) by combining primitive actions (IK solver, grasping, motion planning); (2) execution of multi-step workflows including mobile robot sample transfer between workstations, liquid handling with OT-2, powder weighing and scooping, and multi-robot coordination; (3) integration of FoundationPose for 6D object pose estimation, eliminating the need for manual calibration and hard-coded positions. The approach was validated across multiple workstation environments and successfully deployed to real setups.",
+        "citation": "Results section, subsection \"Skill Library Results: Manipulation and Perception\" and Figure 4; Methods section, subsection \"Workflow Plan Generation\""
+      }
+    ],
+    "rephrased_option_1": "Integrate quantum chemistry computational methods and machine learning to balance accuracy and efficiency for real-time simulation.",
+    "rephrased_option_2": "Explore customized orchestration backends that support richer control flow and tighter integration with scientific compute environments."
+  },
+  {
+    "base_id": "2601.05175_fw0_d0",
+    "paper_id": "2601.05175",
+    "research_goal": "The overarching research goal of this paper is to develop an efficient and adaptive video understanding framework that selectively applies chain-of-thought reasoning only when necessary, rather than unconditionally for all inputs. Specifically, the authors aim to create a system that can automatically determine when explicit step-by-step reasoning provides genuine benefits for video understanding tasks versus when direct answering is sufficient, thereby achieving both high accuracy on challenging reasoning-intensive problems and improved computational efficiency on perception-oriented tasks.",
+    "current_progress": [
+      {
+        "text": "For RL-trained video models, direct answering often matches or even surpasses CoT performance, despite CoT producing step-by-step analyses at a higher computational cost.",
+        "key_result": "Analysis of existing video reasoning models (Video-R1, Time-R1, VideoChat-R1) showed that direct inference often matches or outperforms CoT inference on perception-oriented benchmarks like VideoMME and LongVideoBench, while generating significantly fewer tokens (e.g., 17.6 vs 386 tokens for Video-R1). Consistent CoT gains were primarily observed only on reasoning-intensive benchmarks like VideoMMMU.",
+        "citation": "Section 3.2 (Preliminaries - Analysis of Existing Video Reasoning Models), Table 1"
+      },
+      {
+        "text": "A \"thinking once, answering twice\" training paradigm that supervises both initial and reviewed answers eliminates the need for per-sample think/no-think labels and yields more stable training than traditional mode-switching approaches.",
+        "key_result": "The proposed dual-answer training approach achieved superior performance compared to training-based mode-switching strategies (inspired by AdaptThink). VideoAuto-R1 consistently outperformed the training-based variant across benchmarks (e.g., 58.6% vs 55.7% on VideoMMMU) and avoided mode collapse issues, while the training-based approach showed unstable think ratios (e.g., only 1% on VideoMME, 31% on VideoMMMU).",
+        "citation": "Section 4.1 (Method - Thinking Once, Answering Twice), Section 5.3 (Experiments - Comparison with Other Adaptive Reasoning Strategies), Table 7"
+      },
+      {
+        "text": "A confidence-based early-exit mechanism using length-normalized mean log probability of the initial answer can effectively determine when to invoke CoT reasoning, with the confidence score correlating with mode-switch accuracy.",
+        "key_result": "The confidence score of the initial answer strongly correlated with task difficulty: perception-oriented benchmarks showed high average confidence (>93% on MVBench and MMVU) with low think ratios (~25-39%), while reasoning-intensive VideoMMMU showed lower confidence (87%) with higher think ratio (51%). The mechanism achieved 94-100% recall on \"think-needed\" samples where the initial answer was wrong but the reviewed answer was correct.",
+        "citation": "Section 4.3 (Method - Inference: Confidence-Based Early Exit), Section 5.3 (Experiments - Analysis of Confidence-Based Early Exit Mechanism), Table 8"
+      },
+      {
+        "text": "VideoAuto-R1 achieves state-of-the-art accuracy with significantly improved efficiency by reasoning only when necessary, reducing average response length while maintaining or improving performance.",
+        "key_result": "VideoAuto-R1 achieved state-of-the-art results across benchmarks while reducing average response length from ~149 tokens (RL with thinking baseline) to 44 tokens. On VideoMMMU, it improved accuracy from 54.7% to 58.6% (+3.9%) compared to the Qwen2.5-VL baseline, and on VideoMME from 66.0% to 67.3% (+1.3%). The model adaptively activated thinking mode based on task complexity: 25% on perception-oriented MVBench vs 51% on reasoning-heavy VideoMMMU.",
+        "citation": "Section 5.2 (Experiments - Main Results), Tables 2-4, Abstract"
+      },
+      {
+        "text": "Assigning higher weight to the reviewed answer (w\u2082 > w\u2081) in the dual-answer reward and including a fallback tolerance mechanism improves model performance compared to equal weighting.",
+        "key_result": "Asymmetric reward weighting (0.9:1.1 for w\u2081:w\u2082) with fallback bonus (\u03b1=0.3) achieved the best performance across benchmarks: 67.3% on VideoMME, 58.6% on VideoMMMU, and 60.0 mIoU on Charades-STA. This outperformed equal weighting (1:1) which achieved 66.1%, 56.1%, and 58.3% respectively. The fallback reward consistently improved results across all tested weight ratios.",
+        "citation": "Section 5.3 (Experiments - Ablation Study of Dual-Answer Reward Design), Table 9, Appendix Section on Reward Analysis"
+      },
+      {
+        "text": "Direct RL training without cold-start SFT on chain-of-thought data is more effective than SFT followed by RL for video reasoning tasks.",
+        "key_result": "Direct RL training achieved 66.1% on VideoMME, 71.2% on MVBench, and 56.4% on VideoMMMU. In contrast, SFT on Video-R1-CoT data degraded the baseline (60.1%, 64.0%, 53.8% respectively), and SFT\u2192RL performed worse than direct RL (61.7%, 64.3%, 53.5%). This demonstrated that low-quality CoT supervision can distort strong base models and create poor initialization for RL.",
+        "citation": "Appendix Section A.5 (Analysis of the Impact of Cold-Start SFT), Table 12"
+      }
+    ],
+    "rephrased_option_1": "Incorporate answer confidence calibration into the training objective so that the model learns to assign high confidence to direct answers for simple inputs and low confidence for complex inputs requiring multi-step reasoning.",
+    "rephrased_option_2": "Investigate how reflection-like reasoning behaviors emerge and generalize by applying interventions during the training phase or incorporating supervision at intermediate reasoning steps."
+  },
+  {
+    "base_id": "2602.10067_fw0_d1",
+    "paper_id": "2602.10067",
+    "research_goal": "To develop a scalable framework for training language models on open-ended tasks by using interpretable model features as reward signals, demonstrated through the specific application of reducing hallucinations in long-form text generation.",
+    "current_progress": [
+      {
+        "text": "Features can be used as scalable supervision for open-ended tasks by transforming neural network features into reward functions that measure a model's belief (uncertainty) about concepts underlying desired behaviors.",
+        "key_result": "When applied to hallucination reduction in Gemma-3-12B-IT, the RLFR pipeline achieved a 58% reduction in hallucination rate compared to the base model, at approximately 2 orders-of-magnitude lower cost (~$3,818 vs ~$344,064 for first 300 training steps) than using Gemini 2.5 Pro as a reward model.",
+        "citation": "Section 1 (Introduction), Section 4.1 (Evaluating the Overall Method), Figure 2 (overall results)"
+      },
+      {
+        "text": "If a model learns the data distribution, it should be incentivized to represent latent variables underlying the data generating process as concrete features, which can be decoded using probes to provide well-calibrated beliefs about concepts like factuality.",
+        "key_result": "The classification probe achieved 0.94 AUC-ROC on validation data and maintained 0.85 precision and 0.56 recall at test time when applied to the trained policy's activations. The probes were found to be well-calibrated, with probe predictions closely corresponding to actual probabilities of the positive class.",
+        "citation": "Section 3.1 (Localize and Classify), Section 4.2 (Evaluating Individual Components - Probes), Figure 3 (probe evaluations)"
+      },
+      {
+        "text": "Training a policy to produce outputs that minimize the model's uncertainty (as measured by feature-based probes) about desired behaviors will result in the policy exhibiting those behaviors, without degrading performance on standard benchmarks.",
+        "key_result": "The RLFR-trained policy achieved comparable performance to the base model across all standard benchmarks (HellaSwag, PIQA, ARC-Challenge, ARC-Easy, WinoGrande, BBH, MMLU, MATH, GSM8K, GPQA). The policy also maintained similar numbers of claims per completion (63.4 \u00b1 0.4 vs 63.6 \u00b1 0.3 entities) and received similar preference ratings from Gemini (50.9% preference rate).",
+        "citation": "Section 4.3 (Qualitative and Off-Target Effects), Table 1 (benchmark performance), Figure 7d (longform generation comparisons)"
+      },
+      {
+        "text": "Feature-based reward probes trained on a base model's activations will transfer to the trained policy's activations, enabling test-time compute scaling via Best-of-N sampling without requiring both models at inference.",
+        "key_result": "Fixed and Retracted rates were essentially unchanged when the reward pipeline was run on activations from the trained policy versus the base model (Figure 7c). Best-of-N sampling with the reward probes outperformed an LLM-as-a-Judge baseline by nearly 15 percentage points at N=256, and scaling N from 1 to 256 improved overall intervention success rates.",
+        "citation": "Section 4.2 (Test Time), Section 4.3.2 (Reward Pipeline Transfer), Figure 6 (test time scaling), Figure 7c"
+      },
+      {
+        "text": "The hallucination reduction achieved by RLFR can be decomposed into three components: policy becoming less hallucinatory during training, in-context learning effects from inline interventions, and direct resolution of hallucinations through interventions.",
+        "key_result": "Of the 58% overall hallucination reduction: 10% came from the policy itself becoming less hallucinatory during training (Policy Reduction), 35% came from in-context learning effects when interventions were placed inline, and 13% came from interventions directly resolving hallucinations (Direct Reduction).",
+        "citation": "Section 4.1 (Evaluating the Overall Method), Figure 2 (pie chart decomposition)"
+      },
+      {
+        "text": "A two-step probing pipeline (localization followed by classification) is necessary to achieve reliable hallucination detection with high true-positive rates.",
+        "key_result": "The implemented two-step pipeline achieved 0.85-0.88 precision and 0.56-0.61 recall at test time with a fixed classification threshold of 0.7. The localization probe and classification probe working together were found to be \"critical to derive a reliable (high true-positive rate) probing pipeline.\"",
+        "citation": "Section 3.1 (Localize and Classify), Section 4.2 (Probes), Figure 3a (monitoring pipeline)"
+      },
+      {
+        "text": "The trained policy exhibits larger distributional drift (measured by KL divergence) on hallucinated tokens compared to factually supported tokens, indicating targeted updates to model behavior.",
+        "key_result": "The average KL divergence between the base model and RLFR policy was 10-20% larger on Not Supported tokens versus Supported tokens, on both completions sampled from the base model and from the policy, though with large variation between seeds.",
+        "citation": "Section 4.3.2 (KL over Completions), Figure 7b, Appendix H (KL Between Base and Trained Policy)"
+      }
+    ],
+    "rephrased_option_1": "Apply the proposed framework to regulate additional model behaviors such as controlling agreeableness patterns and reducing output verbosity while maintaining task performance.",
+    "rephrased_option_2": "Explore integrating learned reward agents into the multi-turn interaction paradigm and adapting the framework to work with agents in different simulation environments."
+  },
+  {
     "base_id": "2602.02366_fw0_d0",
     "paper_id": "2602.02366",
-    "research_goal": "To demonstrate that large language models can acquire complex reasoning capabilities through in-context learning mechanisms—specifically by learning compressed key-value cache representations (prefix tuning)—without modifying pretrained model weights, thereby overcoming the scaling limitations of traditional exemplar-based in-context learning while achieving comparable or superior performance to in-weight adaptation methods with greater efficiency in terms of data, parameters, and inference cost.",
+    "research_goal": "To demonstrate that large language models can acquire complex reasoning capabilities through in-context learning mechanisms\u2014specifically by learning compressed key-value cache representations (prefix tuning)\u2014without modifying pretrained model weights, thereby overcoming the scaling limitations of traditional exemplar-based in-context learning while achieving comparable or superior performance to in-weight adaptation methods with greater efficiency in terms of data, parameters, and inference cost.",
     "current_progress": [
       {
         "text": "Prefix tuning can enable LLMs to acquire complex reasoning capabilities without modifying pretrained weights and without overloading the context window, matching or surpassing in-weight adaptation methods.",
@@ -100,5 +552,258 @@
     ],
     "rephrased_option_1": "Explore the proposed method as a post-training approach to acquire skills beyond reasoning capabilities.",
     "rephrased_option_2": "Explore methods that explicitly test generalizability and scalability, and incorporate them as optimization objectives."
+  },
+  {
+    "base_id": "2602.07755_fw0_d1",
+    "paper_id": "2602.07755",
+    "research_goal": "To develop a framework that automatically learns memory designs for agentic systems, enabling them to continually learn from past experiences across diverse domains without relying on manual engineering of memory components.",
+    "current_progress": [
+      {
+        "text": "Agentic systems can learn to continually learn by automating the design of their memory components through meta-learning, enabling memory designs to be specialized for diverse domains without relying on manual engineering.",
+        "key_result": "The learned memory designs achieved an overall improvement of 6.2% compared to the no-memory baseline with GPT-5-nano and outperformed all state-of-the-art human-designed memory baselines across four sequential decision-making benchmarks (ALFWorld, TextWorld, Baba Is AI, and MiniHack). When transferred to GPT-5-mini, the learned designs improved the overall average success rate by 12.8% over the no-memory baseline and continued to outperform all human-designed baselines.",
+        "citation": "Section 4.4 (Results), Table 1"
+      },
+      {
+        "text": "Open-ended exploration is more effective than greedy search for discovering high-performance memory designs.",
+        "key_result": "On ALFWorld, memory designs learned through open-ended exploration achieved success rates of 12.4% (with GPT-5-nano) and 87.1% (with GPT-5-mini), compared to 11.9% and 77.1% respectively for designs learned with greedy search. The results demonstrate that exploration-driven learning processes outperform greedy search approaches.",
+        "citation": "Section 4.4 (Results), Appendix F.2"
+      },
+      {
+        "text": "Learned memory designs exhibit stronger scalability with increasing amounts of collected experience compared to human-designed baselines.",
+        "key_result": "In ALFWorld, the learned memory design achieved higher performance faster with limited data and scaled better as more trajectories were provided during the Memory Collection Phase. The learned design demonstrated both higher sample efficiency and stronger scalability compared to all manual memory designs (Trajectory Retrieval, Reasoning Bank, Dynamic Cheatsheet, and G-Memory).",
+        "citation": "Section 4.4 (Results), Figure 4"
+      },
+      {
+        "text": "Learned memory designs adapt more effectively than human-designed baselines under task distribution shift.",
+        "key_result": "When evaluated on ALFWorld with memory collected from the valid_seen dataset and tested on valid_unseen (distribution shift) using dynamic mode, the learned memory design achieved a success rate of 84.1%, outperforming all human-designed baselines and demonstrating more effective adaptation under task distribution shift.",
+        "citation": "Section 4.4 (Results), Figure 5"
+      },
+      {
+        "text": "Learned memory designs are more cost-efficient than human-designed baselines while maintaining superior performance.",
+        "key_result": "The learned memory designs achieved an average success rate of 53.9% with lower overall end-to-end memory cost across all benchmarks ($0.09) and appropriate token sizes of retrieved content compared to all manual designs, effectively balancing memory efficiency and task performance.",
+        "citation": "Section 4.4 (Results), Figure 6"
+      },
+      {
+        "text": "Learned memory designs generalize robustly across different foundation models, with improvements not tied to a specific model.",
+        "key_result": "When the foundation model in the agentic system was changed from GPT-5-nano (used during learning) to GPT-5-mini (testing transfer), the learned memory designs maintained superior performance over all human-designed baselines. The larger improvement observed with more capable FMs (12.8% vs 6.2%, yielding a delta of 6.6%) exceeded those of all human-designed memory baselines, suggesting that learned memory designs provide stronger support to more capable agentic systems.",
+        "citation": "Section 4.4 (Results), Table 1"
+      },
+      {
+        "text": "ALMA automatically specializes memory designs to the demands of different domains by discovering effective memory structures adapted to diverse task requirements.",
+        "key_result": "Visualization of learned memory designs showed that for games with explicit object interaction goals (ALFWorld and TextWorld), the designs stored fine-grained knowledge such as spatial relationships and room layouts. In contrast, for tasks requiring complex reasoning (Baba Is AI and MiniHack), the designs favored domain-specific abstract strategies including strategy libraries and plan synthesis, indicating automatic specialization to domain demands.",
+        "citation": "Section 4.4 (Results), Figure 3"
+      }
+    ],
+    "rephrased_option_1": "Jointly learn the memory design and the agentic system itself to enable exploration of a larger design space and achieve better integration between memory design and the agentic system.",
+    "rephrased_option_2": "Explore open-ended, real-world applications that involve more diverse toolsets and unpredictable task environments to validate the scheme's adaptability beyond standardized benchmarks with broader toolsets and more intricate reasoning chains."
+  },
+  {
+    "base_id": "2602.07491_fw3_d1",
+    "paper_id": "2602.07491",
+    "research_goal": "To develop and validate a multi-agent AI framework that leverages knowledge graphs and heuristic graph traversal algorithms to systematically generate cross-domain, evidence-grounded material design hypotheses for sustainable alternatives to PFAS (per- and polyfluoroalkyl substances), demonstrating that coordinated agent specialization in problem decomposition, evidence retrieval, design parameter extraction, and relational reasoning outperforms single-agent approaches in balancing creativity, traceability, and alignment with complex multi-objective design requirements.",
+    "current_progress": [
+      {
+        "text": "The multi-agent pipeline with all components enabled outperforms progressively simplified configurations across multiple evaluation criteria for hypothesis generation in materials science.",
+        "key_result": "The full multi-agent pipeline achieved the highest overall performance across six evaluation criteria (task decomposition, context enrichment, cross-subtask integration, deep reasoning, novelty, and source attribution), with scores of 9, 8, 5, 6, 7, and 7 respectively. The ablation study showed consistent decline in performance as components were removed, with the largest gap between the full pipeline and the minimal LLM Only setup. The full system demonstrated superior ability to balance nuanced retrieval, relational reasoning, and traceable evidence compared to all simplified configurations.",
+        "citation": "Section: Ablation Study (subsection 3); Table 2 (ablation-scores); Figure 3 (spider chart); Figure 4 (overall scores bar chart)"
+      },
+      {
+        "text": "Each specialized agent in the multi-agent framework contributes measurably and distinctly to the system's overall performance in hypothesis generation.",
+        "key_result": "Systematic removal of individual agents revealed specific performance degradations: removing the Planner reduced task decomposition scores (from 9 to 6); removing Hybrid GraphWeave limited context enrichment (scores dropped from 8 to 1 in LLM Only); removing Creative GraphWeave diminished deep reasoning (from 6 to 3-4) and cross-subtask integration capabilities. The Evaluator and Creative GraphWeave agents working together strengthened cross-task reasoning, with Direct Graph Exploration outperforming Direct Retrieval in deep reasoning. Systems incorporating external sources achieved higher source-attribution scores, with the full system scoring 7 compared to 1 for LLM Only.",
+        "citation": "Section: Ablation Study (subsection 3); specifically the paragraphs analyzing individual agent contributions"
+      },
+      {
+        "text": "Knowledge graph-guided traversal algorithms enable the discovery of novel cross-domain material connections and hypothesis generation that extends beyond direct literature associations.",
+        "key_result": "Different graph traversal algorithms (Shortest Simple Path, Top-N Shortest Simple Paths, Depth-First Search, and BFS with Semantic Stop) generated distinct material hypotheses with varying compositional complexity and property coverage. The Top-N Shortest Simple Paths (N=5) yielded a more multidimensional proposal (TPU-CNC-Al2O3 composite) compared to the single shortest path (PLA-CNF-PDA composite), capturing broader property domains including mechanical flexibility, thermal stability, protein resistance, and surface biocompatibility. DFS approach explored deeper branches resulting in hierarchical composite architectures with layered functionality (biopolymer-MWCNT-TiO2), demonstrating depth-prioritized accumulation of context along extended reasoning chains.",
+        "citation": "Section: Hypothesis Generation with Heuristic Knowledge Graph Traversal Algorithms (subsection 3.2); Figures 7-11 showing different algorithm outputs"
+      },
+      {
+        "text": "Semantic stops in graph traversal enable controllable hypothesis generation that aligns outputs with specific material families or design constraints while maintaining exploratory breadth.",
+        "key_result": "When the semantic stop was set to \"silk,\" the BFS algorithm successfully steered all keyword-pair paths to traverse through silk fibroin, generating a hypothesis centered on a silk fibroin matrix reinforced with TiO2 nanoparticles and integrated into a eutectogel system. This demonstrated that user-defined constraints can guide hypothesis generation toward specific material families (13 paths out of 91 node pairs included silk fibroin) while still exploring complementary components through adjacent graph neighborhoods, enabling domain-critical outcomes while preserving relational exploration.",
+        "citation": "Section: Breadth-First Search (BFS) with Semantic Stop (subsection 3.2.3); Figures 9, 10, and 11"
+      },
+      {
+        "text": "Multi-agent systems with knowledge graph integration outperform direct LLM prompting for generating grounded, traceable, and contextually enriched scientific hypotheses.",
+        "key_result": "The LLM Only configuration scored lowest across nearly all evaluation criteria: task decomposition (4), context enrichment (1), cross-subtask integration (2), deep reasoning (3), and source attribution (1), compared to the full system's scores of 9, 8, 5, 6, and 7 respectively. While the LLM Only system showed comparable novelty (7), its outputs were described as \"often speculative and not guided by external knowledge,\" whereas configurations with retrieval components achieved better balance between creativity and reliability, generating hypotheses that were imaginative but supported by retrieved information.",
+        "citation": "Section: Ablation Study (subsection 3); Table 2; discussion of LLM Only performance limitations"
+      }
+    ],
+    "rephrased_option_1": "Integrate the computational framework with autonomous synthesis laboratories to enable automated translation of generated material design hypotheses into physical prototypes.",
+    "rephrased_option_2": "Extend the approach to resolve questions with conflicting evidence, similar to critical literature review tasks."
+  },
+  {
+    "base_id": "2602.09163_fw3_d1",
+    "paper_id": "2602.09163",
+    "research_goal": "To develop and evaluate AI agent systems capable of performing end-to-end ontology-based curation of scientific knowledge from large-scale literature corpora, specifically assessing their ability to autonomously search, extract, synthesize, and structure biological information from full-text scientific papers into standardized knowledge base annotations.",
+    "current_progress": [
+      {
+        "text": "Retrieval-based methods improve performance over parametric knowledge alone (memorization baseline), with gains varying by task type.",
+        "key_result": "At 16 papers, Multi-Agent achieves 53%, 53%, and 57% on gene ontology, expression, and synonyms respectively, compared to the Memorization baseline's 49%, 35%, and 37%. Gains are significant on expression and synonyms tasks but relatively marginal on gene ontology, likely because GO terms are standardized vocabulary well-represented in LLM training corpora, while anatomical locations, developmental stages, and historical synonyms are organism-specific and less frequent in general text.",
+        "citation": "Section 5.2 (Experiment 1: Agent Architectures), Result 1"
+      },
+      {
+        "text": "Agent architectures with feedback loops (Single-Agent and Multi-Agent) significantly outperform fixed pipeline architectures at the same retrieval budget.",
+        "key_result": "On all tasks, Single-Agent and Multi-Agent architectures significantly outperform the Pipeline baseline at the same retrieval budget. A key bottleneck for Pipeline is its inability to perform iterative ontology resolution: when batch resolution maps a description to an incorrect or overly generic term, there is no opportunity to refine the query. Agentic architectures can retry with alternative phrasings until finding the correct term, making feedback loops essential for ontology-grounded tasks.",
+        "citation": "Section 5.2 (Experiment 1: Agent Architectures), Result 3"
+      },
+      {
+        "text": "Multi-Agent architecture with partitioned context outperforms Single-Agent architecture with accumulated context, especially at higher retrieval budgets.",
+        "key_result": "Multi-Agent improves consistently across all tasks as paper budget increases from 1 to 16: from 37% to 53% on gene ontology, 37% to 53% on expression, and 39% to 57% on synonyms. In contrast, Single-Agent performance decreases beyond a peak on two of three tasks: on gene ontology, it reaches 50% at 4 papers then drops to 48% at 16; on expression, it peaks at 47% (8 papers) then drops to 45%. This pattern is consistent with context overflow\u2014as retrieved documents accumulate in a single context window, relevant information becomes harder to locate amid noise. Multi-Agent avoids context overflow by partitioning: each subagent processes one paper in isolation, keeping the orchestrator's context bounded.",
+        "citation": "Section 5.2 (Experiment 1: Agent Architectures), Result 2"
+      },
+      {
+        "text": "Scaling backbone LLM capability (from GPT-5-mini to GPT-5) yields diminishing returns compared to architectural improvements once models cross a capability threshold for agentic reasoning.",
+        "key_result": "GPT-5 achieves higher recall on gene ontology and expression tasks, but gains over GPT-5-mini are modest (+2-4%) at 5\u00d7 the cost. The 10-point gap between Single-Agent and Multi-Agent architectures significantly exceeds the 2-4 point gain from GPT-5-mini to GPT-5, indicating that careful architecture design may offer more value than selecting a larger model. GPT-4o underperforms both GPT-5 variants despite costing 7\u00d7 more than GPT-5-mini, suggesting it lacks the complex reasoning required for effective agent loops.",
+        "citation": "Section 5.3 (Experiment 2: Backbone LLMs)"
+      },
+      {
+        "text": "Agents can handle missing ontology terms by finding alternative terms or proposing natural language descriptions, though they prefer to use existing terms rather than propose genuinely novel terminology.",
+        "key_result": "The agent achieves a semantic recall of 47.5% on missing-term group and 55.0% on available-term group. Much of the missing-term recall comes from approximate matches: agents predict parent or sibling terms when the exact term is missing. However, agents are weak at proposing genuinely novel terms. Of the 144 missing terms, the agent produced only 49 natural language descriptions, and these predictions have low semantic similarity to their targets (mean 0.20). Rather than describing unfamiliar concepts, agents tend to fall back on available ontology terms or skip the annotation entirely.",
+        "citation": "Section 5.4 (Experiment 3: The Missing-Term Setting)"
+      }
+    ],
+    "rephrased_option_1": "Explore interactive settings where agents retrieve candidate annotations for human expert review, request clarification on ambiguous cases, or learn from expert feedback.",
+    "rephrased_option_2": "Extend the search agent framework to handle multimodal inputs including both text and images from scientific papers."
+  },
+  {
+    "base_id": "2602.09163_fw1_d1",
+    "paper_id": "2602.09163",
+    "research_goal": "To develop and evaluate AI agent systems capable of performing end-to-end ontology-based curation of scientific knowledge from large-scale literature corpora, specifically assessing their ability to autonomously search, extract, synthesize, and structure biological information from full-text scientific papers into standardized knowledge base annotations.",
+    "current_progress": [
+      {
+        "text": "Retrieval-based methods improve performance over parametric knowledge alone (memorization baseline), with gains varying by task type.",
+        "key_result": "At 16 papers, Multi-Agent achieves 53%, 53%, and 57% on gene ontology, expression, and synonyms respectively, compared to the Memorization baseline's 49%, 35%, and 37%. Gains are significant on expression and synonyms tasks but relatively marginal on gene ontology, likely because GO terms are standardized vocabulary well-represented in LLM training corpora, while anatomical locations, developmental stages, and historical synonyms are organism-specific and less frequent in general text.",
+        "citation": "Section 5.2 (Experiment 1: Agent Architectures), Result 1"
+      },
+      {
+        "text": "Agent architectures with feedback loops (Single-Agent and Multi-Agent) significantly outperform fixed pipeline architectures at the same retrieval budget.",
+        "key_result": "On all tasks, Single-Agent and Multi-Agent architectures significantly outperform the Pipeline baseline at the same retrieval budget. A key bottleneck for Pipeline is its inability to perform iterative ontology resolution: when batch resolution maps a description to an incorrect or overly generic term, there is no opportunity to refine the query. Agentic architectures can retry with alternative phrasings until finding the correct term, making feedback loops essential for ontology-grounded tasks.",
+        "citation": "Section 5.2 (Experiment 1: Agent Architectures), Result 3"
+      },
+      {
+        "text": "Multi-Agent architecture with partitioned context outperforms Single-Agent architecture with accumulated context, especially at higher retrieval budgets.",
+        "key_result": "Multi-Agent improves consistently across all tasks as paper budget increases from 1 to 16: from 37% to 53% on gene ontology, 37% to 53% on expression, and 39% to 57% on synonyms. In contrast, Single-Agent performance decreases beyond a peak on two of three tasks: on gene ontology, it reaches 50% at 4 papers then drops to 48% at 16; on expression, it peaks at 47% (8 papers) then drops to 45%. This pattern is consistent with context overflow\u2014as retrieved documents accumulate in a single context window, relevant information becomes harder to locate amid noise. Multi-Agent avoids context overflow by partitioning: each subagent processes one paper in isolation, keeping the orchestrator's context bounded.",
+        "citation": "Section 5.2 (Experiment 1: Agent Architectures), Result 2"
+      },
+      {
+        "text": "Scaling backbone LLM capability (from GPT-5-mini to GPT-5) yields diminishing returns compared to architectural improvements once models cross a capability threshold for agentic reasoning.",
+        "key_result": "GPT-5 achieves higher recall on gene ontology and expression tasks, but gains over GPT-5-mini are modest (+2-4%) at 5\u00d7 the cost. The 10-point gap between Single-Agent and Multi-Agent architectures significantly exceeds the 2-4 point gain from GPT-5-mini to GPT-5, indicating that careful architecture design may offer more value than selecting a larger model. GPT-4o underperforms both GPT-5 variants despite costing 7\u00d7 more than GPT-5-mini, suggesting it lacks the complex reasoning required for effective agent loops.",
+        "citation": "Section 5.3 (Experiment 2: Backbone LLMs)"
+      },
+      {
+        "text": "Agents can handle missing ontology terms by finding alternative terms or proposing natural language descriptions, though they prefer to use existing terms rather than propose genuinely novel terminology.",
+        "key_result": "The agent achieves a semantic recall of 47.5% on missing-term group and 55.0% on available-term group. Much of the missing-term recall comes from approximate matches: agents predict parent or sibling terms when the exact term is missing. However, agents are weak at proposing genuinely novel terms. Of the 144 missing terms, the agent produced only 49 natural language descriptions, and these predictions have low semantic similarity to their targets (mean 0.20). Rather than describing unfamiliar concepts, agents tend to fall back on available ontology terms or skip the annotation entirely.",
+        "citation": "Section 5.4 (Experiment 3: The Missing-Term Setting)"
+      }
+    ],
+    "rephrased_option_1": "Extend coverage of accessible literature by establishing institutional partnerships or expanding open-access corpus availability.",
+    "rephrased_option_2": "Improve computational and retrieval efficiency to enable larger-scale expansion and utility of the knowledge graph."
+  },
+  {
+    "base_id": "2602.02366_fw2_d1",
+    "paper_id": "2602.02366",
+    "research_goal": "To demonstrate that large language models can acquire complex reasoning capabilities through in-context learning mechanisms\u2014specifically by learning compressed key-value cache representations (prefix tuning)\u2014without modifying pretrained model weights, thereby overcoming the scaling limitations of traditional exemplar-based in-context learning while achieving comparable or superior performance to in-weight adaptation methods with greater efficiency in terms of data, parameters, and inference cost.",
+    "current_progress": [
+      {
+        "text": "Prefix tuning can enable LLMs to acquire complex reasoning capabilities without modifying pretrained weights and without overloading the context window, matching or surpassing in-weight adaptation methods.",
+        "key_result": "ReasonCache (prefix tuning for reasoning) matches or exceeds LoRA and supervised fine-tuning on challenging reasoning benchmarks: achieves 41.92% on GPQA-Diamond (surpassing both LoRA and full SFT), and outperforms LoRA on GSM8K and MATH while keeping all pretrained weights frozen. On AIME 24/25, it preserves baseline accuracy (~13%) while in-weight learning degrades performance (~10%).",
+        "citation": "Section 4.1 (Experimental Results - Main Results), Figure 1 (teaser), Figure 3 (results_main_fig)"
+      },
+      {
+        "text": "ReasonCache is more data-efficient than in-weight learning methods, requiring substantially less training data to achieve comparable accuracy.",
+        "key_result": "ReasonCache requires 59% less data than LoRA to reach 50% accuracy on GSM8K. It traces the Pareto frontier of accuracy versus training dataset size across nearly four orders of magnitude, matching ICL's data efficiency at low data while continuing to scale with additional data like in-weight methods.",
+        "citation": "Section 4.2 (Data Efficiency), Figure 4 (data_efficiency_plot)"
+      },
+      {
+        "text": "ReasonCache is more inference-efficient than in-context learning, achieving better accuracy at substantially lower computational cost.",
+        "key_result": "ReasonCache outperforms the best ICL configuration by 44.8 percentage points while using 90% less total inference compute on GSM8K. On GPQA-Diamond, it achieves 11% higher accuracy than SFT while generating 34% shorter responses, directly reducing inference compute and monetary expense.",
+        "citation": "Section 4.3 (Inference Efficiency), Figure 5 (inference_cost), Figure 6 (verbosity)"
+      },
+      {
+        "text": "ReasonCache is more parameter-efficient than LoRA, achieving higher accuracy with fewer trainable parameters.",
+        "key_result": "To reach a target test accuracy of 50% on GSM8K, ReasonCache requires 46% fewer parameters than LoRA. Under matched parameter budgets, ReasonCache consistently dominates LoRA across the entire accuracy-parameter curve and continues to improve as the budget increases while LoRA saturates early.",
+        "citation": "Section 4.4 (Parameter Efficiency), Figure 7 (acc_vs_params)"
+      },
+      {
+        "text": "Prefix tuning can be strictly more expressive than LoRA due to an input-dependent carrier bottleneck in low-rank weight updates.",
+        "key_result": "Theoretical proof (Theorem 5.1) shows that prefix tuning is strictly more expressive when m > min{t_X, r}, where m is prefix length, t_X is context rank, and r is LoRA rank. Empirically validated: ReasonCache increases the effective rank of learned representations by approximately 20% relative to SFT and LoRA. Learned prefix values place 70-90% of their energy outside the dominant value subspace used by the base model.",
+        "citation": "Section 5 (Theoretical Perspectives), Theorem 5.1, Section 5.4 (Empirical Evidence), Figures 8-10 (effective_dimension, prefix_energy, effective_rank)"
+      }
+    ],
+    "rephrased_option_1": "Integrate trainable cache representations into existing inference systems and post-training frameworks using mechanisms similar to standard caching approaches.",
+    "rephrased_option_2": "Investigate dynamic compute allocation to balance reasoning effort across different reasoning stages in large-scale deployments."
+  },
+  {
+    "base_id": "2601.14525_fw5_d0",
+    "paper_id": "2601.14525",
+    "research_goal": "To develop and evaluate an automated system that can generate, implement, and execute research ideas for open-ended AI research problems, and to investigate whether large language models can learn to generate more effective ideas by grounding their ideation process in execution feedback through evolutionary search and reinforcement learning.",
+    "current_progress": [
+      {
+        "text": "Frontier LLMs can generate ideas that outperform provided baselines through best-of-N sampling, and a large fraction of LLM-generated ideas can be successfully executed automatically on open-ended AI research problems.",
+        "key_result": "Benchmarking experiments showed that frontier LLMs achieved high execution rates (over 90% for Claude-4.5-Opus and Claude-4.5-Sonnet on nanoGPT with self-execution), and best-of-N performance (N=50) beat baseline solutions. For example, Claude-4.5-Sonnet achieved 60.4% max accuracy vs 48.0% baseline on GRPO; Claude-4.5-Opus achieved 3.237 min loss vs 3.255 baseline on nanoGPT.",
+        "citation": "Section 3: Benchmarking LLM Ideators and Executors; Figure 2"
+      },
+      {
+        "text": "Execution-guided evolutionary search can find research ideas that significantly outperform baseline solutions on realistic LLM research problems (pre-training and post-training) within a limited number of search epochs.",
+        "key_result": "Within 10 search epochs, execution-guided search found a post-training recipe achieving 69.4% vs 48.0% baseline on GRPO, and a pre-training recipe achieving 19.7 minutes vs 35.9 minutes baseline on nanoGPT to reach target validation loss. The post-training result outperformed the best human expert solution (68.8%) from the Stanford CS336 class leaderboard.",
+        "citation": "Section 4: Execution-Guided Evolutionary Search; Table 1; Figure 3"
+      },
+      {
+        "text": "Execution-guided evolutionary search is more sample-efficient than best-of-N sampling under the same sampling budget.",
+        "key_result": "Comparison on nanoGPT environment with GPT-5 showed that evolutionary search significantly outperformed best-of-N from epoch 1 onward under the same sampling budget (N=80 ideas per epoch), demonstrating that the model effectively leverages trajectories from previous epochs to generate more effective ideas.",
+        "citation": "Section 4.3: Comparison with Best-of-N; Figure 4"
+      },
+      {
+        "text": "LLMs generate substantial amounts of algorithmic ideas (beyond hyperparameter tuning) during execution-guided search, and algorithmic ideas achieve higher upper-bound performance than hyperparameter ideas in most cases.",
+        "key_result": "Quantitative analysis showed all three models (Claude-4.5-Opus, Claude-4.5-Sonnet, GPT-5) generated substantial algorithmic ideas: 96.3%, 58.9%, and 95.0% respectively on GRPO; 91.3%, 68.7%, and 84.6% on nanoGPT. Algorithmic ideas achieved the best performance for all models except Claude-4.5-Sonnet.",
+        "citation": "Section 4.4: Analysis of Generated Ideas; Table 2"
+      },
+      {
+        "text": "Reinforcement learning from execution reward can improve the average reward of ideator models on open-ended AI research problems.",
+        "key_result": "RL training with GRPO on Qwen3-30B successfully improved average reward: on GRPO environment, average accuracy increased from 0.253 to 0.343 after 40 epochs; on nanoGPT environment, average reward increased from 0.194 to 0.246 after 68 epochs (corresponding to average validation loss decreasing from 5.150 to 4.066).",
+        "citation": "Section 5: Reinforcement Learning from Execution Reward; Section 5.2: Experiment Results; Figure 5 (upper row)"
+      },
+      {
+        "text": "Reinforcement learning from execution reward improves the maximum reward (upper-bound performance) of ideator models on open-ended AI research problems.",
+        "key_result": "This hypothesis was invalidated. The max reward fluctuated throughout RL training without a clear upward trend on both GRPO and nanoGPT environments, revealing a crucial limitation of the standard GRPO algorithm for improving idea generation where upper-bound performance matters more than average quality.",
+        "citation": "Section 5.2: Experiment Results, paragraph \"The Case of Max Reward\"; Figure 5 (lower row)"
+      },
+      {
+        "text": "RL from execution reward causes models to converge on simple, easy-to-implement ideas, leading to diversity collapse and shrinking thinking lengths.",
+        "key_result": "Analysis confirmed this hypothesis: (1) Thinking trace lengths rapidly decreased during RL training while idea lengths stayed constant; (2) Ideas with longer thinking had consistently lower execution rates; (3) Severe diversity collapse occurred - in nanoGPT, 119 out of 128 sampled ideas at epoch 68 were one of two common simple ideas (replacing RMSNorm with LayerNorm or performing EMA), compared to 51 out of 128 at epoch 0.",
+        "citation": "Section 5.3: Analysis of Training Dynamics; Figures 6 and 7"
+      }
+    ],
+    "rephrased_option_1": "Implement more capable coding agents with access to external tools and the ability to install new libraries in the execution environments, rather than directly prompting a language model for code modifications.",
+    "rephrased_option_2": "Investigate how the proposed training scheme scales to larger parameter models to determine whether more powerful base models amplify the benefits of structured reasoning feedback."
+  },
+  {
+    "base_id": "2512.22322_fw1_d1",
+    "paper_id": "2512.22322",
+    "research_goal": "The overarching research goal is to develop a scalable and reliable paradigm for training autonomous GUI agents by shifting from passive, post-hoc verification to proactive, in-situ self-verification. Specifically, the work aims to create Self-Verifying Agents that simultaneously learn to complete complex tasks and curate minimal, decisive snapshot evidence to prove their accomplishment, thereby reducing verification costs and improving reliability in agentic reinforcement learning.",
+    "current_progress": [
+      {
+        "text": "The Self-Verifying Agent paradigm, which shifts verification from passive post-hoc analysis to proactive in-situ self-verification by the agent itself, enables scalable and reliable training of LLM-driven agents for GUI tasks.",
+        "key_result": "SmartSnap achieves performance gains up to 26.08% and 16.66% respectively for 8B and 30B models across model families (LLaMA3.1-8B, Qwen2.5-7B, Qwen3-8B, Qwen3-32B) on AndroidLab. The trained agents (e.g., SmartSnap with Qwen3-8B and Qwen3-32B) achieve competitive performance with much larger models (DeepSeek V3.1 and Qwen3-235B-A22B), demonstrating that the self-verification paradigm fundamentally enhances training efficiency and scalability.",
+        "citation": "Section 4.3 (Main Results), Table 2, Figure 1"
+      },
+      {
+        "text": "The 3C Principles (Completeness, Conciseness, and Creativity) for evidence curation create a synergistic learning loop where the requirement to find and present evidence compels the agent to develop deeper understanding of tasks, as the knowledge required for successful execution and effective proof are deeply intertwined.",
+        "key_result": "Fine-tuning with self-verification (following 3C principles) substantially outperforms vanilla fine-tuning using the Android Instruct dataset across all models. For example, Qwen2.5-7B achieves 30.15% SR with SmartSnap FT versus 20.28% with vanilla FT (+17.83% gain), and Qwen3-8B achieves 26.81% versus 19.56% (+16.66% gain). The qualitative analysis shows agents learn to decompose tasks into actionable checklists and proactively create evidence-oriented actions (e.g., taking snapshots that list target transactions), demonstrating the synergy between task completion and evidence curation.",
+        "citation": "Section 4.3 (Main Results), Table 2; Section 4.4 (Qualitative Analysis, Case Study), Figures 7-8"
+      },
+      {
+        "text": "Grounding evidence in objective, unalterable tool interactions (action-observation pairs) rather than agent self-declarations prevents reward hacking and enables trustworthy verification, as agents cannot fabricate or manipulate the evidence.",
+        "key_result": "The RL training dynamics show consistent improvement in training reward with decreasing intra-group variance, indicating agents learn to complete tasks and curate valid evidence without gaming the system. The number of evidences converges toward 1.5 on average (satisfying the Conciseness principle), and agents learn more compact interaction patterns (decreasing number of agent turns and response length over training). The evidence validity check shows agents successfully navigate toward relevant application screens even when tasks ultimately fail, demonstrating the robustness of the grounded evidence formulation.",
+        "citation": "Section 4.4 (Qualitative Analysis - Behavior Evolution and Performance Variation), Figures 5-6"
+      },
+      {
+        "text": "Intrinsic reward shaping through structured, dense feedback from an LLM/VLM verifier (including evidence validity, strict evidence-to-task grounding, format compliance, and conciseness penalties) accelerates the agent's acquisition of evidence curation skills during reinforcement learning.",
+        "key_result": "RL with SmartSnap's reward shaping consistently improves performance beyond SFT across all model families. For instance, LLaMA3.1-8B improves from 23.91% (FT) to 31.15% (RL), Qwen2.5-7B from 30.15% to 30.43%, Qwen3-8B from 26.81% to 36.23%, and Qwen3-32B from 28.98% to 34.78%. The training reward curves show monotonic improvement with decreasing variance, and agents develop efficient behaviors (fewer turns, shorter responses, minimal evidence sets) that satisfy the reward shaping objectives.",
+        "citation": "Section 3.4 (Evidence Verification and Reward Shaping), Section 4.3 (Main Results), Table 2; Section 4.4 (Qualitative Analysis), Figures 5-6"
+      }
+    ],
+    "rephrased_option_1": "Extend the self-verifying agent paradigm to more diverse and heterogeneous task environments beyond the single benchmark currently tested, addressing the engineering challenges of scaling reinforcement learning with resource-intensive sandbox environments.",
+    "rephrased_option_2": "Investigate multimodal reasoning approaches that allow models to dynamically revisit visual content during the reasoning process rather than reasoning solely from initial encoded representations."
   }
 ]
