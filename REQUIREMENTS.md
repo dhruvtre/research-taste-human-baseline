@@ -11,7 +11,7 @@ See `SCHEMA.md` for the input (queries.json) and output (response export) data c
 - Flow: intake → instructions → queries → end.
 - Responses persisted to localStorage during the session, exported via download.
 - Honor system on partial responses.
-- Target session: ~10 subjects × ~16 queries each.
+- Target session: ~10 subjects × 23 queries each.
 
 ## Files
 
@@ -38,13 +38,13 @@ See `SCHEMA.md` for the input (queries.json) and output (response export) data c
 
 ### Views
 - `showView(name)` — toggle visibility between `intake` / `instructions` / `query` / `end`.
-- `renderQuery(idx)` — draw research context + two options per the persisted A/B assignment.
+- `renderQuery(idx)` — draw research context, two options per the persisted A/B assignment, and the cannot-choose affordance.
 - `renderEnd()` — summary + final download button.
 
 ### Handlers
 - `checkActiveSession()` — runs on load; prompts resume-vs-restart if existing state found.
 - `handleIntakeSubmit(form)` — validate, generate `subject_id`, persist intake, advance.
-- `handleQuerySubmit(choice)` — record response with time-spent, advance to next or end.
+- `handleQuerySubmit(choice, abstentionReason)` — record response with time-spent, advance to next or end.
 - `handleDownload()` — build export per `SCHEMA.md`, trigger file download.
 
 ### Helpers
@@ -55,11 +55,12 @@ See `SCHEMA.md` for the input (queries.json) and output (response export) data c
 
 ## Key behaviors
 
-- **Balanced A/B per session.** `assignOrderings` assigns exactly half the pairs `option_1-at-A` and the other half `option_2-at-A` (rounded for odd batches). The frontend doesn't know which option is GT — it just balances the two opaque option labels. Position-bias analysis depends on this.
-- **Persist eagerly.** Every intake submission and every query response writes to localStorage immediately. Refresh mid-session must not lose data.
+- **Balanced A/B per session.** `assignOrderings` assigns exactly half the pairs `option_1-at-A` and the other half `option_2-at-A` (rounded for odd batches). The frontend doesn't know any answer-key mapping — it just balances the two opaque option labels. Position-bias analysis depends on this.
+- **Abstention capture.** Each query includes a third "I cannot make a meaningful choice from the provided context" choice. If selected, the subject must choose one `abstention_reason` code before submitting: `context_unclear_insufficient`, `options_dont_make_sense`, `outside_domain_expertise`, or `other`.
+- **Persist eagerly.** Every intake submission and every submitted query response writes to localStorage immediately. Refresh mid-session must not lose data.
 - **Resume vs restart.** If a session is detected on load, ask the subject. Restart wipes localStorage; resume continues from `current_index`.
 - **Download from anywhere.** Reachable from every view after intake. Partial exports set `session.completed: false`.
-- **No GT awareness.** The frontend treats `rephrased_option_1` and `rephrased_option_2` as opaque strings and has no way to tell which is GT. `paper_id` and `base_id` are read for state and join purposes but never rendered to subjects.
+- **No answer-key awareness.** The frontend treats `rephrased_option_1` and `rephrased_option_2` as opaque strings and has no way to tell which option maps to the analysis answer key. `paper_id` and `base_id` are read for state and join purposes but never rendered to subjects.
 - **Time per query.** Measured from when the query renders to when the subject submits a choice, in milliseconds.
 
 ## Code style

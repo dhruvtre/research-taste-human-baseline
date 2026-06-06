@@ -109,8 +109,9 @@
             Once you submit a query, you can't go back to revise it.
           </li>
           <li>
-            Progress saves automatically in this browser. Refresh or close
-            the tab and come back &mdash; your answers stick.
+            Progress saves automatically in this browser after you click
+            Submit &amp; continue. Refresh or close the tab and come back
+            &mdash; submitted answers stick.
           </li>
           <li>
             The download button (bottom right) exports a JSON file with
@@ -195,7 +196,31 @@
               <span class="option__letter">Option B</span>
               <span class="option__text" id="option-b-text"></span>
             </button>
+            <button type="button" class="option option--abstain" data-slot="cannot_choose" id="option-cannot-choose">
+              <span class="option__letter">Cannot choose</span>
+              <span class="option__text">I cannot make a meaningful choice from the provided context.</span>
+            </button>
           </div>
+
+          <fieldset class="abstention-reasons" id="abstention-reasons" hidden>
+            <legend class="abstention-reasons__legend">Reason</legend>
+            <label class="abstention-reason">
+              <input type="radio" name="abstention_reason" value="context_unclear_insufficient">
+              <span>Context unclear/insufficient</span>
+            </label>
+            <label class="abstention-reason">
+              <input type="radio" name="abstention_reason" value="options_dont_make_sense">
+              <span>One or both options don't make sense</span>
+            </label>
+            <label class="abstention-reason">
+              <input type="radio" name="abstention_reason" value="outside_domain_expertise">
+              <span>Outside domain expertise</span>
+            </label>
+            <label class="abstention-reason">
+              <input type="radio" name="abstention_reason" value="other">
+              <span>Other</span>
+            </label>
+          </fieldset>
 
           <div class="query-actions">
             <button type="button" id="query-submit" class="btn" disabled>

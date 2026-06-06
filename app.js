@@ -26,6 +26,14 @@ const APP = {
   queryRenderTime: 0,   // performance.now() snapshot, for time_spent_ms
 };
 
+const ABSTENTION_CHOICE = 'cannot_choose';
+const ABSTENTION_REASONS = new Set([
+  'context_unclear_insufficient',
+  'options_dont_make_sense',
+  'outside_domain_expertise',
+  'other',
+]);
+
 
 /* ----- State (localStorage) --------------------------------- */
 
@@ -125,8 +133,7 @@ function renderQuery(idx) {
   document.getElementById('option-b-text').textContent = textAtB;
 
   // Reset interaction state
-  document.querySelectorAll('.option').forEach(o => o.classList.remove('is-selected'));
-  document.getElementById('query-submit').disabled = true;
+  resetQueryInteraction();
 
   // Capture render time for the time-spent calculation on submit
   APP.queryRenderTime = performance.now();
@@ -222,20 +229,25 @@ function handleIntakeSubmit(form) {
   showView('instructions');
 }
 
-function handleQuerySubmit(choice) {
+function handleQuerySubmit(choice, abstentionReason = null) {
   const idx = APP.currentIndex;
   const query = APP.queries[idx];
   const ordering = APP.assignments[query.base_id];
 
   const textAtA = ordering === 'option_1' ? query.rephrased_option_1 : query.rephrased_option_2;
   const textAtB = ordering === 'option_1' ? query.rephrased_option_2 : query.rephrased_option_1;
-  const choiceText = choice === 'A' ? textAtA : textAtB;
+  const isAbstention = choice === ABSTENTION_CHOICE;
+  const choiceText = choice === 'A' ? textAtA : choice === 'B' ? textAtB : null;
+
+  if (isAbstention && !ABSTENTION_REASONS.has(abstentionReason)) return;
+  if (!isAbstention && choiceText === null) return;
 
   const response = {
     base_id: query.base_id,
     subject_choice: choice,
     subject_choice_text: choiceText,
     options: [textAtA, textAtB],   // display order: [text at A, text at B]
+    ...(isAbstention ? { abstention_reason: abstentionReason } : {}),
     time_spent_ms: Math.round(performance.now() - APP.queryRenderTime),
     timestamp: nowIso(),
   };
@@ -297,6 +309,38 @@ function toRoman(num) {
   return result;
 }
 
+function getSelectedAbstentionReason() {
+  return document.querySelector('[name=abstention_reason]:checked')?.value || null;
+}
+
+function clearAbstentionReasons() {
+  document.querySelectorAll('[name=abstention_reason]').forEach(input => {
+    input.checked = false;
+  });
+}
+
+function setAbstentionReasonsVisible(visible) {
+  document.getElementById('abstention-reasons').hidden = !visible;
+}
+
+function updateQuerySubmitState() {
+  const selected = document.querySelector('.option.is-selected');
+  const submit = document.getElementById('query-submit');
+  if (!selected) {
+    submit.disabled = true;
+    return;
+  }
+  const isAbstention = selected.dataset.slot === ABSTENTION_CHOICE;
+  submit.disabled = isAbstention && !getSelectedAbstentionReason();
+}
+
+function resetQueryInteraction() {
+  document.querySelectorAll('.option').forEach(o => o.classList.remove('is-selected'));
+  clearAbstentionReasons();
+  setAbstentionReasonsVisible(false);
+  document.getElementById('query-submit').disabled = true;
+}
+
 function formatExport() {
   const state = loadState();
   const total = APP.queries.length;
@@ -351,15 +395,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     opt.addEventListener('click', () => {
       document.querySelectorAll('.option').forEach(o => o.classList.remove('is-selected'));
       opt.classList.add('is-selected');
-      document.getElementById('query-submit').disabled = false;
+      const isAbstention = opt.dataset.slot === ABSTENTION_CHOICE;
+      setAbstentionReasonsVisible(isAbstention);
+      if (!isAbstention) clearAbstentionReasons();
+      updateQuerySubmitState();
     });
+  });
+
+  document.querySelectorAll('[name=abstention_reason]').forEach(input => {
+    input.addEventListener('change', updateQuerySubmitState);
   });
 
   // Submit & continue
   document.getElementById('query-submit').addEventListener('click', () => {
     const selected = document.querySelector('.option.is-selected');
     if (!selected) return;
-    handleQuerySubmit(selected.dataset.slot);
+    const choice = selected.dataset.slot;
+    const abstentionReason = choice === ABSTENTION_CHOICE ? getSelectedAbstentionReason() : null;
+    handleQuerySubmit(choice, abstentionReason);
   });
 
   // Download buttons (persistent + end-view)

@@ -1,6 +1,6 @@
 # Human Baseline Collector
 
-A static-HTML tool for collecting human responses on a pairwise selection task. Subjects sign in, answer a fixed set of queries, and download their responses as JSON.
+A static-HTML tool for collecting human responses on a pairwise selection task. Subjects sign in, answer a fixed set of queries, may abstain when context is insufficient, and download their responses as JSON.
 
 Built for an upcoming Lossfunk research project on "research taste" in language models. The tool is generic — drop in any `data/queries.json` matching the input schema.
 
