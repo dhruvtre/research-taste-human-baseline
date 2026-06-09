@@ -35,10 +35,11 @@ See `SCHEMA.md` for the input (queries.json) and output (response export) data c
 ### Data + setup
 - `loadQueries()` — fetch `data/queries.json`.
 - `assignOrderings(queries)` — produce per-pair A/B assignments for this session, **balanced 50/50 option_1-at-A vs option_2-at-A**, then shuffled. Persisted on first call.
+- `assignQueryOrder(queries)` — produce a randomized per-session query order, persisted on first call.
 
 ### Views
 - `showView(name)` — toggle visibility between `intake` / `instructions` / `query` / `end`.
-- `renderQuery(idx)` — draw research context, two options per the persisted A/B assignment, and the cannot-choose affordance.
+- `renderQuery(idx)` — draw the query at the persisted randomized display index, two options per the persisted A/B assignment, and the cannot-choose affordance.
 - `renderEnd()` — summary + final download button.
 
 ### Handlers
@@ -55,7 +56,8 @@ See `SCHEMA.md` for the input (queries.json) and output (response export) data c
 
 ## Key behaviors
 
-- **Balanced A/B per session.** `assignOrderings` assigns exactly half the pairs `option_1-at-A` and the other half `option_2-at-A` (rounded for odd batches). The frontend doesn't know any answer-key mapping — it just balances the two opaque option labels. Position-bias analysis depends on this.
+- **Randomized query order per session.** `assignQueryOrder` shuffles query `base_id`s at intake, persists the sequence, and resumes from the same order after refreshes. Partial exports preserve the full sequence in `session.query_order`.
+- **Balanced A/B per session.** `assignOrderings` assigns exactly half the pairs `option_1-at-A` and the other half `option_2-at-A` (rounded for odd batches), independent of randomized query order. The frontend doesn't know any answer-key mapping — it just balances the two opaque option labels. Position-bias analysis depends on this.
 - **Abstention capture.** Each query includes a third "I cannot make a meaningful choice from the provided context" choice. If selected, the subject must choose one `abstention_reason` code before submitting: `context_unclear_insufficient`, `options_dont_make_sense`, `outside_domain_expertise`, or `other`.
 - **Persist eagerly.** Every intake submission and every submitted query response writes to localStorage immediately. Refresh mid-session must not lose data.
 - **Resume vs restart.** If a session is detected on load, ask the subject. Restart wipes localStorage; resume continues from `current_index`.

@@ -18,7 +18,7 @@ We retain the canonical structure for `paper_id`, `research_goal`, and `current_
 
 ## Input — `data/queries.json`
 
-Array of pair objects. Each entry represents one pair the subject decides on. The frontend randomizes which option appears in slot A vs slot B per session.
+Array of pair objects. Each entry represents one pair the subject decides on. The frontend randomizes query order per session and randomizes which option appears in slot A vs slot B.
 
 ```json
 [
@@ -81,7 +81,11 @@ Subjects may either choose displayed slot A/B or abstain when they cannot make a
     "end_time": "2026-04-28T15:45:32Z",
     "completed": true,
     "queries_total": 23,
-    "queries_completed": 23
+    "queries_completed": 23,
+    "query_order": [
+      "2602.09163_fw3_d0",
+      "2601.16175_fw0_d0"
+    ]
   },
   "responses": [
     {
@@ -111,7 +115,20 @@ Subjects may either choose displayed slot A/B or abstain when they cannot make a
 }
 ```
 
+### Fields under `session`
+
+| Field | Type | Notes |
+|---|---|---|
+| `start_time` | ISO8601 | When the subject started the session. |
+| `end_time` | ISO8601 | When the export was downloaded. |
+| `completed` | boolean | `true` only after all queries are answered. |
+| `queries_total` | integer | Total number of queries in the batch. |
+| `queries_completed` | integer | Number of submitted responses in this export. |
+| `query_order` | array of strings | Randomized `base_id` sequence shown to the subject for this session. Partial exports may have fewer responses than entries in this full sequence. |
+
 ### Fields under `responses[]`
+
+`responses[]` entries are appended in display order, following `session.query_order` for the queries the subject has answered.
 
 | Field | Type | Notes |
 |---|---|---|
@@ -132,7 +149,7 @@ Subjects may either choose displayed slot A/B or abstain when they cannot make a
 | `outside_domain_expertise` | Outside domain expertise |
 | `other` | Other |
 
-**Important: the `options` array is in display order, not canonical order.** The frontend assigns each pair's two texts to slots A and B at session start (balanced as evenly as possible across the batch) and writes the texts into `options` in that order. Code that consumes the export must not assume `options[0]` corresponds to `rephrased_option_1` from the input file — match by string content.
+**Important: the `options` array is in display order, not canonical order.** The frontend assigns each pair's two texts to slots A and B at session start (balanced as evenly as possible across the batch) and writes the texts into `options` in that order. Code that consumes the export must not assume `options[0]` corresponds to `rephrased_option_1` from the input file — match by string content. Similarly, `responses[]` is answered display order, not canonical query-file order; use `base_id` and `session.query_order` for reconstruction.
 
 `session.completed` is `true` only after all queries are answered. Partial exports (download mid-session) set `completed: false` with `queries_completed < queries_total`.
 

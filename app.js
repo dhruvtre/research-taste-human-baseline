@@ -11,6 +11,7 @@ const STORAGE_KEYS = {
   subject_id:    'hbc_subject_id',
   intake:        'hbc_intake',
   assignments:   'hbc_assignments',
+  query_order:   'hbc_query_order',
   responses:     'hbc_responses',
   current_index: 'hbc_current_index',
   session_start: 'hbc_session_start',
@@ -22,6 +23,7 @@ const STORAGE_KEYS = {
 const APP = {
   queries: [],          // loaded from data/queries.json
   assignments: {},      // {base_id → "option_1" | "option_2"} = which option is at slot A
+  queryOrder: [],       // randomized base_id sequence for this subject's session
   currentIndex: 0,      // index into APP.queries
   queryRenderTime: 0,   // performance.now() snapshot, for time_spent_ms
 };
@@ -92,6 +94,35 @@ function assignOrderings(queries) {
   return assignments;
 }
 
+// Randomized query order for this session. Persisted on first call so refreshes
+// and partial downloads preserve the same sequence.
+function assignQueryOrder(queries) {
+  const existing = loadState().query_order;
+  const queryIds = new Set(queries.map(q => q.base_id));
+
+  if (
+    existing &&
+    existing.length === queries.length &&
+    existing.every(baseId => queryIds.has(baseId))
+  ) {
+    return existing;
+  }
+
+  const order = queries.map(q => q.base_id);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+
+  saveState({ query_order: order });
+  return order;
+}
+
+function getQueryAtDisplayIndex(idx) {
+  const baseId = APP.queryOrder[idx];
+  return APP.queries.find(q => q.base_id === baseId) || APP.queries[idx];
+}
+
 
 /* ----- Views ------------------------------------------------ */
 
@@ -102,7 +133,7 @@ function showView(name) {
 }
 
 function renderQuery(idx) {
-  const query = APP.queries[idx];
+  const query = getQueryAtDisplayIndex(idx);
   const total = APP.queries.length;
   const ordering = APP.assignments[query.base_id]; // which option is at slot A this session
 
@@ -179,6 +210,7 @@ function checkActiveSession() {
   }
 
   APP.assignments = state.assignments || {};
+  APP.queryOrder = state.query_order || assignQueryOrder(APP.queries);
   APP.currentIndex = state.current_index || 0;
   document.getElementById('download-button').hidden = false;
 
@@ -214,6 +246,7 @@ function handleIntakeSubmit(form) {
   };
 
   APP.assignments = assignOrderings(APP.queries);
+  APP.queryOrder = assignQueryOrder(APP.queries);
   APP.currentIndex = 0;
 
   saveState({
@@ -231,7 +264,7 @@ function handleIntakeSubmit(form) {
 
 function handleQuerySubmit(choice, abstentionReason = null) {
   const idx = APP.currentIndex;
-  const query = APP.queries[idx];
+  const query = getQueryAtDisplayIndex(idx);
   const ordering = APP.assignments[query.base_id];
 
   const textAtA = ordering === 'option_1' ? query.rephrased_option_1 : query.rephrased_option_2;
@@ -357,6 +390,7 @@ function formatExport() {
       completed: responses.length === total,
       queries_total: total,
       queries_completed: responses.length,
+      query_order: state.query_order,
     },
     responses,
   };
@@ -435,6 +469,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  APP.queryOrder = APP.queries.map(q => q.base_id);
   document.getElementById('instructions-total').textContent = APP.queries.length;
   checkActiveSession();
 });
